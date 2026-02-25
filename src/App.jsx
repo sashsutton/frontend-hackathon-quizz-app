@@ -7,11 +7,9 @@ function App() {
 
   return (
       <div>
-          <h1>Hackathon 2026</h1>
           <Navbar></Navbar>
           <Routes>
               <Route path="/" element={<HomePage/>}/>
-
           </Routes>
 
       </div>
