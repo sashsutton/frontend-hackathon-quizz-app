@@ -3,7 +3,10 @@
 
 function Navbar(){
     return(
-        <div>Navbar</div>
+        <div>
+            <p> This is my navbar</p>
+        </div>
+
     )
 }
 
