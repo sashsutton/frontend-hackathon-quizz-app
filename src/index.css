@@ -29,16 +29,16 @@ nav {
   border-bottom: 1px solid rgb(255, 255, 255);
 }
 
-.crumbs ol {
+.nav-crumbs ol {
   list-style-type: none;
   padding-left: 0;
 }
 
-.crumb {
+.nav-crumb {
   display: inline-block;
 }
 
-.crumb a::after {
+.nav-crumb a::after {
   display: inline-block;
   color: rgb(255, 255, 255);
   content: ">";

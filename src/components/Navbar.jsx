@@ -2,16 +2,18 @@
 
 
 function Navbar() {
-    const isConnected = true;
+    const isConnected = false;
 
     return(
-        <nav className="crumbs">
+        <nav className="nav-crumbs">
         
         <ul className="">
-            <li class="crumb"><a href="./play">Jouer</a></li>
-            <li class="crumb"><a href="./make">Créer</a></li>
-            {!isConnected && <li class="crumb"><a href="./login">Se connecter</a></li>}
-            {isConnected && <li class="crumb"><a href="./logout">Se déconnecter</a></li>}
+            <li class="nav-crumb"><a href="/">Accueil</a></li>
+            <li class="nav-crumb"><a href="/play">Jouer</a></li>
+            <li class="nav-crumb"><a href="/make">Créer</a></li>
+            <li class="nav-crumb"><a href="/quiz-list">Liste des quiz</a></li>
+            {!isConnected && <li class="nav-crumb"><a href="/login">Se connecter</a></li>}
+            {isConnected && <li class="nav-crumb"><a href="/logout">Se déconnecter</a></li>}
         </ul>
         </nav>
 
