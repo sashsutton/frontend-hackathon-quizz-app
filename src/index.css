@@ -16,8 +16,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -27,3 +25,24 @@ h1 {
   line-height: 1.1;
 }
 
+nav {
+  border-bottom: 1px solid rgb(255, 255, 255);
+}
+
+.crumbs ol {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.crumb {
+  display: inline-block;
+}
+
+.crumb a::after {
+  display: inline-block;
+  color: rgb(255, 255, 255);
+  content: ">";
+  font-size: 80%;
+  font-weight: bold;
+  padding: 0.3px;
+}
