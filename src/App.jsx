@@ -6,6 +6,7 @@ import PlayPage from "./pages/PlayPage.jsx";
 import MakePage from "./pages/MakePage.jsx";
 import QuizListPage from "./pages/QuizListPage.jsx";
 import ProtectedRoute from './components/ProtectedRoute';
+import QuizPage from './pages/QuizPage.jsx';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
                 </ProtectedRoute>
               }/>
               <Route path="/quiz-list" element={<QuizListPage/>}/>
+              <Route path="/quiz-list/:quizId" element={<QuizPage/>}/>
           </Routes>
 
       </div>
