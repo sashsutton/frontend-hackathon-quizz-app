@@ -7,40 +7,44 @@ import PlayPage from "./pages/PlayPage.jsx";
 import MakePage from "./pages/MakePage.jsx";
 import ProtectedRoute from './components/ProtectedRoute';
 
-import PlaySoloPage from "./pages/PlaySoloPage.jsx"; 
-import QuizDetailsPage from "./pages/quizdetails.jsx"; 
+import PlaySoloGamePage from "./pages/PlaySoloGamePage.jsx";
+import QuizDetailsPage from "./pages/quizDetails.jsx";
 import MockQuizList from './pages/MockQuizLisPage.jsx';
 import QuizPage from "./pages/QuizPage.jsx";
-import Quizdetails from "./pages/quizdetails.jsx";
+import Quizdetails from "./pages/quizDetails.jsx";
 
 function App() {
   return (
-      <div>
-          <Navbar />
-          <Routes>
-              <Route path="/" element={<HomePage />} />
-              
-              <Route path="/play" element={
-                <ProtectedRoute>
-                  <PlayPage />
-                </ProtectedRoute>
-              } />
+    <div>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
 
-              <Route path="/play/:id" element={<PlaySoloPage />} />
+        <Route path="/play" element={
+          <ProtectedRoute>
+            <PlayPage />
+          </ProtectedRoute>
+        } />
 
-              <Route path="/quiz-list" element={<QuizListPage />} />
+        <Route path="/play/:id" element={
+          <ProtectedRoute>
+            <PlaySoloGamePage />
+          </ProtectedRoute>
+        } />
 
-              <Route path="/quiz-details/:id" element={<Quizdetails />} />
+        <Route path="/quiz-list" element={<QuizListPage />} />
 
-              <Route path="/make" element={
-                <ProtectedRoute>
-                  <MakePage />
-                </ProtectedRoute>
-              } />
+        <Route path="/quiz-details/:id" element={<Quizdetails />} />
 
-              <Route path="/mock-list" element={<MockQuizList />} />
-          </Routes>
-      </div>
+        <Route path="/make" element={
+          <ProtectedRoute>
+            <MakePage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/mock-list" element={<MockQuizList />} />
+      </Routes>
+    </div>
   )
 }
 

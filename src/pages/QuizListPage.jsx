@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/clerk-react';
 
 function QuizListPage() {
     const [quizzes, setQuizzes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const { getToken, isLoaded, isSignedIn } = useAuth();
 
     useEffect(() => {
@@ -21,6 +22,8 @@ function QuizListPage() {
                 setQuizzes(response.data);
             } catch (error) {
                 console.error("Erreur serveur :", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -71,6 +74,34 @@ function QuizListPage() {
             margin: '0 auto'
         }
     };
+    if (loading) {
+        return (
+            <div style={{ ...styles.container, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <style>{`
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                    @keyframes pulse { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+                    .ql-dot { width: 12px; height: 12px; border-radius: 50%; background: #e84393; display: inline-block; margin: 0 6px; animation: pulse 1.2s ease-in-out infinite; }
+                    .ql-dot:nth-child(2) { animation-delay: 0.2s; }
+                    .ql-dot:nth-child(3) { animation-delay: 0.4s; }
+                `}</style>
+                <div style={{
+                    width: '80px', height: '80px', borderRadius: '50%',
+                    border: '4px solid rgba(255,255,255,0.1)',
+                    borderTop: '4px solid #e84393',
+                    animation: 'spin 1s linear infinite',
+                    marginBottom: '28px'
+                }} />
+                <h2 style={{ fontSize: '22px', marginBottom: '8px', color: 'white' }}>Chargement des quiz</h2>
+                <p style={{ color: '#a29bfe', marginBottom: '24px' }}>Récupération de la liste en cours...</p>
+                <div>
+                    <span className="ql-dot" />
+                    <span className="ql-dot" />
+                    <span className="ql-dot" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={styles.container}>
             <div style={styles.header}>
