@@ -39,7 +39,7 @@ function MakePage() {
             <form action="/make-quiz" method="POST">
                 <input type="file" id="quiz-import" name="quiz-import" accept=".csv" required onChange={handleFileChange}></input>
                 {valid && <input type="submit" value="Créer"></input>}
-                {!valid && <p>Fichier non valide, vérifiez qu'il respecte bien le format décrit ci-dessus</p>}
+                {!valid && <p className="warning">Fichier non valide, vérifiez qu'il respecte bien le format décrit ci-dessus</p>}
             </form>
         </div>
     )

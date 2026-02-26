@@ -7,7 +7,11 @@ import PlayPage from "./pages/PlayPage.jsx";
 import MakePage from "./pages/MakePage.jsx";
 import QuizListPage from "./pages/QuizListPage.jsx";
 import ProtectedRoute from './components/ProtectedRoute';
+<<<<<<< HEAD
 import QuizList from './pages/MockQuizLisPage.jsx';
+=======
+import QuizPage from './pages/QuizPage.jsx';
+>>>>>>> b7e65b7ed42ac86b7b05b4a003c0c2fbb95069ca
 
 function App() {
 
@@ -28,7 +32,12 @@ function App() {
                   <MakePage/>
                 </ProtectedRoute>
               }/>
+<<<<<<< HEAD
               <Route path="/quiz-list" element={<QuizList/>}/>
+=======
+              <Route path="/quiz-list" element={<QuizListPage/>}/>
+              <Route path="/quiz-list/:quizId" element={<QuizPage/>}/>
+>>>>>>> b7e65b7ed42ac86b7b05b4a003c0c2fbb95069ca
           </Routes>
 
       </div>
