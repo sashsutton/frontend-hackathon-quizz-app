@@ -6,9 +6,10 @@ function Navbar() {
         <nav className="navbar">
             <ul className="nav-crumbs">
                 <li className="nav-crumb"><Link to="/">Accueil</Link></li>
-                <li className="nav-crumb"><Link to="/play">Jouer</Link></li>
+                <li className="nav-crumb"><Link to="/quiz-list">Quiz</Link></li>
+                <li className="nav-crumb"><Link to="/duel">⚔️ Duel</Link></li>
+                <li className="nav-crumb"><Link to="/leaderboard">🏆 Classement</Link></li>
                 <li className="nav-crumb"><Link to="/make">Créer</Link></li>
-                <li className="nav-crumb"><Link to="/quiz-list">Liste des quiz</Link></li>
 
                 <SignedOut>
                     <li className="nav-crumb"><SignInButton mode="modal" /></li>
@@ -16,6 +17,7 @@ function Navbar() {
                 </SignedOut>
 
                 <SignedIn>
+                    <li className="nav-crumb"><Link to="/profile">👤 Profil</Link></li>
                     <li className="nav-crumb">
                         <UserButton afterSignOutUrl="/" />
                     </li>
