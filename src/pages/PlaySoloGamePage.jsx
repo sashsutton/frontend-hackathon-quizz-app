@@ -46,15 +46,17 @@ function PlaySoloGamePage() {
             setPhase("submitting");
             try {
                 const token = await getToken();
+                console.log("[SUBMIT] Sending answers:", JSON.stringify(answers));
                 const res = await axios.post(`${API}/quiz/submit-solo`, {
                     session_id: sessionId.current,
                     quiz_id: quizId,
                     answers,
                 }, { headers: { Authorization: `Bearer ${token}` } });
+                console.log("[SUBMIT] Response:", res.data);
                 setScore(res.data.score ?? 0);
                 setDetails(res.data.details ?? []);
             } catch (e) {
-                console.error("Submit error:", e);
+                console.error("[SUBMIT] Error:", e.response?.data ?? e.message);
             }
             setPhase("finished");
         } else {
