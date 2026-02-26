@@ -18,119 +18,116 @@ function QuizListPage() {
         fetchQuizzes();
     }, []); 
 
-
-    return (
-    <div style={{ 
-        padding: '40px 20px', 
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", 
-        maxWidth: '900px', 
-        margin: '0 auto', 
-        backgroundColor: '#f8f9fa', 
-        minHeight: '100vh' 
-    }}>
-        
-        <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-            <h1 style={{ color: '#2c3e50', fontSize: '36px', fontWeight: '800', marginBottom: '10px' }}>
-                 Liste de Quiz
-            </h1>
-            <p style={{ color: '#7f8c8d', fontSize: '18px' }}>Choisis un défi !</p>
-            <div style={{ 
-                width: '60px', 
-                height: '4px', 
-                backgroundColor: '#3498db', 
-                margin: '20px auto', 
-                borderRadius: '2px' 
-            }}></div>
-        </div>
-
-        {quizzes.length === 0 ? (
-            <div style={{ 
-                padding: '40px', 
-                textAlign: 'center', 
-                backgroundColor: '#ffffff', 
-                borderRadius: '16px', 
-                boxShadow: '0 4px 15px rgba(0,0,0,0.05)', 
-                color: '#e67e22',
-                border: '1px dashed #ffd8a8'
-            }}
-            >
-                <p style={{ color: '#7f8c8d' }}>Pas de quiz disponible pour le moment.</p>
-            </div>
-        ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '25px' }}>
-    {quizzes.map((quiz) => (
-        <div key={quiz._id} style={{
-            padding: '30px',
-            borderRadius: '16px',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+const styles = {
+        container: { 
+            padding: '60px 20px', 
+            backgroundColor: '#1a1a2e', 
+            minHeight: '100vh',
+            color: 'white',
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+        },
+        header: { marginBottom: '50px', textAlign: 'center' },
+        title: { fontSize: '3.5rem', fontWeight: '800', marginBottom: '10px' },
+        underline: { 
+            width: '60px', height: '4px', backgroundColor: '#e84393', 
+            margin: '20px auto', borderRadius: '2px' 
+        },
+        grid: { 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '30px', 
+            maxWidth: '1200px', 
+            margin: '0 auto' 
+        },
+        card: {
+            padding: '40px',
+            borderRadius: '20px',
+            backgroundColor: '#16213e',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center', 
             textAlign: 'center',    
-            transition: 'transform 0.2s ease',
-            border: '1px solid #f1f2f6'
-        }}>
-            <div style={{ marginBottom: '15px' }}>
-                <h2 style={{ 
-                    margin: '0 0 10px 0', 
-                    color: '#3498db', 
-                    fontSize: '24px', 
-                    fontWeight: '700' 
-                }}>
-                    {quiz.title}
-                </h2>
-                <span style={{
-                    color: '#7f8c8d',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                }}>
-                    Catégorie : <strong style={{ color: '#2c3e50' }}>{quiz.category}</strong>
-                </span>
+            transition: 'all 0.3s ease',
+            border: '1px solid rgba(255,255,255,0.05)'
+        },
+        emptyState: {
+            padding: '60px',
+            textAlign: 'center',
+            backgroundColor: '#16213e',
+            borderRadius: '20px',
+            border: '2px dashed #3498db',
+            color: '#b2bec3',
+            maxWidth: '600px',
+            margin: '0 auto'
+        }
+    };
+    return (
+        <div style={styles.container}>
+            <div style={styles.header}>
+                <h1 style={styles.title}>Liste de Quiz</h1>
+                <p style={{ color: '#a29bfe', fontSize: '1.2rem' }}>Choisis un défi !</p>
+                <div style={styles.underline}></div>
             </div>
 
-            <p style={{ 
-                color: '#576574', 
-                fontSize: '16px', 
-                lineHeight: '1.6', 
-                marginBottom: '25px',
-                maxWidth: '600px'
-            }}>
-                {quiz.description || "Préparez-vous à relever ce défi passionnant !"}
-            </p>
+            {quizzes.length === 0 ? (
+                <div style={styles.emptyState}>
+                    <p style={{ fontSize: '1.2rem' }}>Pas de quiz disponible pour le moment.</p>
+                </div>
+            ) : (
+                <div style={styles.grid}>
+                    {quizzes.map((quiz) => (
+                        <div 
+                            key={quiz._id} 
+                            style={styles.card}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-10px)';
+                                e.currentTarget.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.4)';
+                                e.currentTarget.style.borderColor = '#3498db';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                            }}
+                        >
+                            <div style={{ marginBottom: '20px' }}>
+                                <h2 style={{ color: 'white', fontSize: '26px', fontWeight: '700', marginBottom: '10px' }}>
+                                    {quiz.title}
+                                </h2>
+                                <span style={{ color: '#a29bfe', fontSize: '14px', fontWeight: '600' }}>
+                                    Catégorie : <strong style={{ color: '#e84393' }}>{quiz.category}</strong>
+                                </span>
+                            </div>
 
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                width: '100%',
-                borderTop: '1px solid #f1f2f6', 
-                paddingTop: '20px' 
-            }}>
-                <Link 
-        to={`/quiz-details/${quiz._id}`} 
-        style={{
-            backgroundColor: '#3498db',
-            color: 'white',
-            padding: '12px 40px',
-            borderRadius: '10px',
-            textDecoration: 'none',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-            transition: 'all 0.3s ease'
-        }}
-        onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-        onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-    >
-        Voir le Quiz
-    </Link>
-            </div>
+                            <p style={{ color: '#b2bec3', fontSize: '16px', lineHeight: '1.6', marginBottom: '30px' }}>
+                                {quiz.description || "Préparez-vous à relever ce défi passionnant !"}
+                            </p>
+
+                            <Link 
+                                to={`/quiz-details/${quiz._id}`} 
+                                style={{
+                                    backgroundColor: '#3498db',
+                                    color: 'white',
+                                    padding: '12px 35px',
+                                    borderRadius: '12px',
+                                    textDecoration: 'none',
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    transition: 'background 0.3s ease',
+                                    boxShadow: '0 4px 15px rgba(52, 152, 219, 0.3)'
+                                }}
+                                onMouseOver={(e) => e.target.style.backgroundColor = '#2980b9'}
+                                onMouseOut={(e) => e.target.style.backgroundColor = '#3498db'}
+                            >
+                                Voir le Quiz
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-    ))}
-</div>
-        )}
-    </div>
-);
+    );
 }
 
 export default QuizListPage;

@@ -5,3 +5,63 @@
   text-align: center;
 }
 
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a2e; 
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.quiz-card {
+  transition: all 0.3s ease !important;
+}
+
+.quiz-card:hover {
+  transform: translateY(-10px); 
+  border-color: #e84393 !important; 
+  box-shadow: 0 0 20px rgba(232, 67, 147, 0.6) !important; 
+  background-color: #1c2a4e !important; 
+}
+.navbar {
+  background-color: rgba(26, 26, 46, 0.95);
+  padding: 20px 50px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-crumbs {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-crumb a {
+  color: #a29bfe;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.nav-crumb a:hover {
+  color: #e84393; 
+}
+
+.cl-userButtonTrigger {
+  transform: scale(1.2);
+}
+.upload-box-interactive {
+    transition: all 0.3s ease-in-out !important;
+}
+
+.upload-box-interactive:hover {
+    background-color: #243b6b !important; 
+    border-color: #e84393 !important;      
+    box-shadow: 0 0 25px rgba(232, 67, 147, 0.5) !important; 
+    transform: scale(1.02);                
+}

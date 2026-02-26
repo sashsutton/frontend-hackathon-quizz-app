@@ -1,36 +1,28 @@
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
-
 import { Link } from 'react-router-dom';
+
 function Navbar() {
-
-    return(
+    return (
         <nav className="navbar">
-        
-        <ul className="nav-crumbs">
-            <li className="nav-crumb"><a href="/">Accueil</a></li>
-            <li className="nav-crumb"><a href="/play">Jouer</a></li>
-            <Link to="/make">Créer un Quiz</Link>
-            <li className="nav-crumb"><a href="/quiz-list">Liste des quiz</a></li>
+            <ul className="nav-crumbs">
+                <li className="nav-crumb"><Link to="/">Accueil</Link></li>
+                <li className="nav-crumb"><Link to="/play">Jouer</Link></li>
+                <li className="nav-crumb"><Link to="/make">Créer</Link></li>
+                <li className="nav-crumb"><Link to="/quiz-list">Liste des quiz</Link></li>
 
-            <SignedOut>
-                <li className="nav-crumb">
-                    <SignInButton mode="modal" />
-                </li>
-                <li className="nav-crumb">
-                    <SignUpButton mode="modal" />
-                </li>
-            </SignedOut>
+                <SignedOut>
+                    <li className="nav-crumb"><SignInButton mode="modal" /></li>
+                    <li className="nav-crumb"><SignUpButton mode="modal" /></li>
+                </SignedOut>
 
-            <SignedIn>
-                <li className="nav-crumb">
-                    <UserButton afterSignOutUrl="/" />
-                </li>
-            </SignedIn>
-        </ul>
+                <SignedIn>
+                    <li className="nav-crumb">
+                        <UserButton afterSignOutUrl="/" />
+                    </li>
+                </SignedIn>
+            </ul>
         </nav>
-
-    )
+    );
 }
 
-
-export default Navbar
+export default Navbar;
