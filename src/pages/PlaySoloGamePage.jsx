@@ -148,55 +148,30 @@ function PlaySoloGamePage() {
 
     // ─── Render ──────────────────────────────────────────────────────────────────
 
-    const styles = {
-        page: {
-            minHeight: "100vh",
-            background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            color: "white",
-            padding: "20px",
-        },
-        card: {
-            background: "rgba(255,255,255,0.05)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "24px",
-            padding: "48px",
-            width: "100%",
-            maxWidth: "760px",
-            boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
-            textAlign: "center",
-        },
+    const pageStyle = {
+        minHeight: '100vh',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '80px 20px 40px',
+        fontFamily: "var(--font-mono)",
+        color: "var(--white)",
+    };
+    const cardStyle = {
+        background: 'rgba(0,0,20,0.85)',
+        border: '2px solid var(--cyan)',
+        boxShadow: '0 0 25px rgba(0,255,255,0.15), inset 0 0 30px rgba(0,255,255,0.03)',
+        padding: '40px 48px',
+        width: '100%', maxWidth: '780px',
+        textAlign: 'center',
     };
 
     if (phase === "loading") {
         return (
-            <div style={styles.page}>
-                <style>{`
-                    @keyframes spin { to { transform: rotate(360deg); } }
-                    @keyframes pulse { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
-                    .dot { width: 12px; height: 12px; border-radius: 50%; background: #a29bfe; display: inline-block; margin: 0 6px; animation: pulse 1.2s ease-in-out infinite; }
-                    .dot:nth-child(2) { animation-delay: 0.2s; }
-                    .dot:nth-child(3) { animation-delay: 0.4s; }
-                `}</style>
-                <div style={styles.card}>
-                    <div style={{
-                        width: "80px", height: "80px", borderRadius: "50%",
-                        border: "4px solid rgba(255,255,255,0.1)",
-                        borderTop: "4px solid #a29bfe",
-                        margin: "0 auto 28px",
-                        animation: "spin 1s linear infinite"
-                    }} />
-                    <h2 style={{ fontSize: "22px", marginBottom: "8px", color: "white" }}>Préparation du quiz</h2>
-                    <p style={{ color: "#a29bfe", marginBottom: "24px" }}>Chargement des questions en cours...</p>
-                    <div>
-                        <span className="dot" />
-                        <span className="dot" />
-                        <span className="dot" />
-                    </div>
+            <div style={pageStyle}>
+                <div style={cardStyle}>
+                    <div className="retro-spinner" style={{ margin: '0 auto 28px' }} />
+                    <h2 style={{ fontFamily: 'var(--font-pixel)', fontSize: 13, color: 'var(--cyan)', textShadow: '0 0 10px var(--cyan)', marginBottom: 16 }}>CHARGEMENT...</h2>
+                    <p style={{ color: 'var(--dim)', fontSize: 12, fontFamily: 'var(--font-hud)', letterSpacing: '0.1em', marginBottom: 20 }}>PRÉPARATION DU QUIZ</p>
+                    <div><span className="retro-dot" /><span className="retro-dot" /><span className="retro-dot" /></div>
                 </div>
             </div>
         );
@@ -204,15 +179,12 @@ function PlaySoloGamePage() {
 
     if (phase === "error") {
         return (
-            <div style={styles.page}>
-                <div style={styles.card}>
-                    <div style={{ fontSize: "48px", marginBottom: "20px" }}>❌</div>
-                    <h2 style={{ color: "#e74c3c" }}>{errorMsg}</h2>
-                    <button
-                        onClick={() => navigate("/quiz-list")}
-                        style={{ marginTop: "20px", padding: "12px 30px", borderRadius: "12px", border: "none", background: "#e74c3c", color: "white", fontSize: "16px", cursor: "pointer" }}
-                    >
-                        Retour à la liste
+            <div style={pageStyle}>
+                <div style={cardStyle}>
+                    <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 13, color: 'var(--magenta)', textShadow: '0 0 10px var(--magenta)', marginBottom: 24 }}>ERREUR</p>
+                    <p style={{ color: 'var(--dim)', fontFamily: 'var(--font-hud)', fontSize: 12, marginBottom: 28 }}>{errorMsg}</p>
+                    <button onClick={() => navigate("/quiz-list")} className="retro-btn retro-btn-magenta" style={{ fontSize: 11, letterSpacing: '0.15em' }}>
+                        ◀ RETOUR
                     </button>
                 </div>
             </div>
@@ -221,10 +193,10 @@ function PlaySoloGamePage() {
 
     if (phase === "submitting") {
         return (
-            <div style={styles.page}>
-                <div style={styles.card}>
-                    <div style={{ fontSize: "48px", marginBottom: "20px" }}>📊</div>
-                    <h2>Calcul de votre score...</h2>
+            <div style={pageStyle}>
+                <div style={cardStyle}>
+                    <div className="retro-spinner" style={{ margin: '0 auto 20px' }} />
+                    <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--cyan)', fontSize: 12, letterSpacing: '0.15em' }}>CALCUL DU SCORE...</p>
                 </div>
             </div>
         );
@@ -232,36 +204,32 @@ function PlaySoloGamePage() {
 
     if (phase === "finished") {
         return (
-            <div style={styles.page}>
-                <div style={{ ...styles.card, maxWidth: "860px" }}>
-                    <div style={{ fontSize: "64px", marginBottom: "10px" }}>🏆</div>
-                    <h1 style={{ fontSize: "40px", color: "#f1c40f", marginBottom: "10px" }}>Quiz terminé !</h1>
-                    <p style={{ fontSize: "22px", color: "#a29bfe", marginBottom: "5px" }}>Votre score final</p>
-                    <p style={{ fontSize: "72px", fontWeight: "bold", color: "#2ecc71", margin: "10px 0 30px" }}>{score}</p>
-                    <p style={{ color: "#a29bfe", marginBottom: "30px" }}>Merci d'avoir joué à « {quiz?.title} » !</p>
+            <div style={pageStyle}>
+                <div style={{ ...cardStyle, maxWidth: '860px' }}>
+                    <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 13, color: 'var(--yellow)', textShadow: '0 0 15px var(--yellow)', marginBottom: 12 }}>QUIZ TERMINÉ</p>
+                    <p style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--dim)', letterSpacing: '0.1em', marginBottom: 4 }}>SCORE FINAL</p>
+                    <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 'clamp(40px, 8vw, 72px)', color: 'var(--green)', textShadow: '0 0 20px var(--green)', margin: '10px 0 24px' }}>{score}</p>
+                    <p style={{ color: 'var(--dim)', fontFamily: 'var(--font-hud)', fontSize: 12, marginBottom: 32, letterSpacing: '0.05em' }}>{quiz?.title}</p>
 
-                    <div style={{ textAlign: "left", background: "rgba(0,0,0,0.2)", borderRadius: "16px", padding: "24px", marginBottom: "30px" }}>
-                        <h3 style={{ color: "#a29bfe", marginBottom: "20px" }}>Détail des réponses :</h3>
+                    <div style={{ textAlign: 'left', border: '1px solid rgba(0,255,255,0.15)', background: 'rgba(0,255,255,0.03)', padding: '20px 24px', marginBottom: 28 }}>
+                        <p style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--cyan)', letterSpacing: '0.1em', marginBottom: 16 }}>DÉTAIL DES RÉPONSES</p>
                         {quiz?.questions?.map((q, idx) => {
                             const qId = String(q.id ?? idx);
                             const result = details?.find(r => String(r.question_id) === qId);
                             const ok = result?.is_correct;
                             return (
-                                <div key={idx} style={{ marginBottom: "12px", padding: "14px 18px", borderLeft: `5px solid ${ok ? "#2ecc71" : "#e74c3c"}`, background: ok ? "rgba(46,204,113,0.08)" : "rgba(231,76,60,0.08)", borderRadius: "6px" }}>
-                                    <p style={{ margin: "0 0 6px", fontWeight: "bold" }}>{idx + 1}. {q.text}</p>
-                                    <p style={{ margin: 0, color: ok ? "#2ecc71" : "#e74c3c" }}>
-                                        {result?.selected_option ? `Votre réponse : ${result.selected_option}` : "(Aucune réponse)"} {ok ? "✅" : "❌"}
+                                <div key={idx} style={{ marginBottom: 10, padding: '12px 16px', borderLeft: `3px solid ${ok ? 'var(--green)' : 'var(--magenta)'}`, background: ok ? 'rgba(0,255,65,0.06)' : 'rgba(255,0,255,0.06)' }}>
+                                    <p style={{ margin: '0 0 6px', fontFamily: 'var(--font-hud)', fontSize: 12, color: 'var(--white)', letterSpacing: '0.02em' }}>{idx + 1}. {q.text}</p>
+                                    <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 13, color: ok ? 'var(--green)' : 'var(--magenta)' }}>
+                                        {result?.selected_option ? `▶ ${result.selected_option}` : '(AUCUNE RÉPONSE)'} {ok ? '✓' : '✗'}
                                     </p>
                                 </div>
                             );
                         })}
                     </div>
 
-                    <button
-                        onClick={() => navigate("/quiz-list")}
-                        style={{ padding: "14px 40px", borderRadius: "12px", border: "none", background: "linear-gradient(135deg, #e84393, #a855f7)", color: "white", fontSize: "18px", fontWeight: "bold", cursor: "pointer" }}
-                    >
-                        Retour à la liste
+                    <button onClick={() => navigate('/quiz-list')} className="retro-btn" style={{ fontSize: 11, letterSpacing: '0.15em', padding: '14px 40px' }}>
+                        ◀ RETOUR AUX QUIZ
                     </button>
                 </div>
             </div>
@@ -270,66 +238,51 @@ function PlaySoloGamePage() {
 
     // ── phase === "playing" ──
     const currentQ = quiz?.questions[qIndex];
-    const timerColor = timer <= 5 ? "#e74c3c" : timer <= 10 ? "#f39c12" : "#3498db";
+    const timerColor = timer <= 5 ? 'var(--magenta)' : timer <= 10 ? 'var(--yellow)' : 'var(--cyan)';
     const timerPct = (timer / TIMER_SECONDS) * 100;
 
     return (
-        <div style={styles.page}>
-            <div style={styles.card}>
-                {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-                    <span style={{ color: "#a29bfe", fontSize: "16px", fontWeight: "600" }}>
-                        Question {qIndex + 1} / {quiz?.questions?.length}
+        <div style={pageStyle}>
+            <div style={cardStyle}>
+                {/* HUD bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+                    <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--cyan)', letterSpacing: '0.1em' }}>
+                        Q{qIndex + 1}/{quiz?.questions?.length}
                     </span>
-                    <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: "28px", fontWeight: "bold", color: timerColor }}>{timer}s</div>
-                        <div style={{ width: "120px", height: "6px", background: "rgba(255,255,255,0.1)", borderRadius: "3px", marginTop: "4px" }}>
-                            <div style={{ width: `${timerPct}%`, height: "100%", background: timerColor, borderRadius: "3px", transition: "width 1s linear, background 0.3s" }} />
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 22, color: timerColor, textShadow: `0 0 12px ${timerColor}`, marginBottom: 6 }}>
+                            {String(timer).padStart(2, '0')}
+                        </div>
+                        <div style={{ width: 120, height: 4, background: 'rgba(255,255,255,0.1)' }}>
+                            <div style={{ width: `${timerPct}%`, height: '100%', background: timerColor, boxShadow: `0 0 8px ${timerColor}`, transition: 'width 1s linear' }} />
                         </div>
                     </div>
-                    <span style={{ color: "#a29bfe", fontSize: "16px", fontWeight: "600" }}>
-                        {quiz?.title}
+                    <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--dim)', letterSpacing: '0.05em', maxWidth: 140, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        SOLO
                     </span>
                 </div>
 
-                {/* Question */}
                 {currentQ ? (
                     <>
-                        <h2 style={{ fontSize: "26px", lineHeight: "1.5", marginBottom: "36px", color: "white" }}>
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 18, lineHeight: 1.8, color: 'var(--white)', marginBottom: 36, textAlign: 'left', borderLeft: '3px solid var(--cyan)', paddingLeft: 16 }}>
                             {currentQ.text}
-                        </h2>
-
-                        {/* Options */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                             {(currentQ.options ?? []).map((opt, i) => (
                                 <button
                                     key={i}
                                     onClick={() => recordAnswer(opt)}
-                                    style={{
-                                        padding: "18px 20px",
-                                        borderRadius: "14px",
-                                        border: "2px solid rgba(255,255,255,0.15)",
-                                        background: "rgba(255,255,255,0.07)",
-                                        color: "white",
-                                        fontSize: "17px",
-                                        cursor: "pointer",
-                                        transition: "all 0.2s ease",
-                                        textAlign: "left",
-                                    }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(52,152,219,0.3)"; e.currentTarget.style.borderColor = "#3498db"; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+                                    style={{ padding: '16px 20px', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--white)', textAlign: 'left', background: 'rgba(0,255,255,0.04)', border: '1px solid rgba(0,255,255,0.25)', transition: 'all 0.15s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; e.currentTarget.style.borderColor = 'var(--cyan)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(0,255,255,0.3)'; e.currentTarget.style.color = 'var(--cyan)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,255,255,0.25)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.color = 'var(--white)'; }}
                                 >
-                                    <span style={{ color: "#a29bfe", fontWeight: "bold", marginRight: "10px" }}>
-                                        {String.fromCharCode(65 + i)}.
-                                    </span>
+                                    <span style={{ fontFamily: 'var(--font-pixel)', fontSize: 10, color: 'var(--cyan)', marginRight: 12 }}>{String.fromCharCode(65 + i)}.</span>
                                     {opt}
                                 </button>
                             ))}
                         </div>
                     </>
-                ) : (
-                    <p>Question introuvable.</p>
-                )}
+                ) : <p>Question introuvable.</p>}
             </div>
         </div>
     );

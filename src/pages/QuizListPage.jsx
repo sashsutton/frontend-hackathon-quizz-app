@@ -6,18 +6,15 @@ import { useAuth } from '@clerk/clerk-react';
 function QuizListPage() {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { getToken, isLoaded, isSignedIn } = useAuth();
+    const { getToken, isLoaded } = useAuth();
 
     useEffect(() => {
         if (!isLoaded) return;
-
         const fetchQuizzes = async () => {
             try {
                 const token = await getToken();
                 const response = await axios.get('http://127.0.0.1:5000/quiz/get-all-quizzes', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    headers: { Authorization: `Bearer ${token}` }
                 });
                 setQuizzes(response.data);
             } catch (error) {
@@ -26,141 +23,79 @@ function QuizListPage() {
                 setLoading(false);
             }
         };
-
         fetchQuizzes();
     }, [isLoaded]);
 
-    const styles = {
-        container: {
-            padding: '60px 20px',
-            backgroundColor: '#1a1a2e',
-            minHeight: '100vh',
-            color: 'white',
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-        },
-        header: { marginBottom: '50px', textAlign: 'center' },
-        title: { fontSize: '3.5rem', fontWeight: '800', marginBottom: '10px' },
-        underline: {
-            width: '60px', height: '4px', backgroundColor: '#e84393',
-            margin: '20px auto', borderRadius: '2px'
-        },
-        grid: {
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '30px',
-            maxWidth: '1200px',
-            margin: '0 auto'
-        },
-        card: {
-            padding: '40px',
-            borderRadius: '20px',
-            backgroundColor: '#16213e',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            transition: 'all 0.3s ease',
-            border: '1px solid rgba(255,255,255,0.05)'
-        },
-        emptyState: {
-            padding: '60px',
-            textAlign: 'center',
-            backgroundColor: '#16213e',
-            borderRadius: '20px',
-            border: '2px dashed #3498db',
-            color: '#b2bec3',
-            maxWidth: '600px',
-            margin: '0 auto'
-        }
-    };
     if (loading) {
         return (
-            <div style={{ ...styles.container, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <style>{`
-                    @keyframes spin { to { transform: rotate(360deg); } }
-                    @keyframes pulse { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
-                    .ql-dot { width: 12px; height: 12px; border-radius: 50%; background: #e84393; display: inline-block; margin: 0 6px; animation: pulse 1.2s ease-in-out infinite; }
-                    .ql-dot:nth-child(2) { animation-delay: 0.2s; }
-                    .ql-dot:nth-child(3) { animation-delay: 0.4s; }
-                `}</style>
-                <div style={{
-                    width: '80px', height: '80px', borderRadius: '50%',
-                    border: '4px solid rgba(255,255,255,0.1)',
-                    borderTop: '4px solid #e84393',
-                    animation: 'spin 1s linear infinite',
-                    marginBottom: '28px'
-                }} />
-                <h2 style={{ fontSize: '22px', marginBottom: '8px', color: 'white' }}>Chargement des quiz</h2>
-                <p style={{ color: '#a29bfe', marginBottom: '24px' }}>Récupération de la liste en cours...</p>
-                <div>
-                    <span className="ql-dot" />
-                    <span className="ql-dot" />
-                    <span className="ql-dot" />
+            <div className="retro-page">
+                <div className="retro-spinner" />
+                <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--cyan)', marginTop: 24, fontSize: 13, letterSpacing: '0.1em' }}>
+                    CHARGEMENT...
+                </p>
+                <div style={{ marginTop: 20 }}>
+                    <span className="retro-dot" />
+                    <span className="retro-dot" />
+                    <span className="retro-dot" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={styles.container}>
-            <div style={styles.header}>
-                <h1 style={styles.title}>Liste de Quiz</h1>
-                <p style={{ color: '#a29bfe', fontSize: '1.2rem' }}>Choisis un défi !</p>
-                <div style={styles.underline}></div>
+        <div style={{ minHeight: '100vh', padding: '80px 40px 60px', maxWidth: 1200, margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: 60 }}>
+                <h1 className="retro-title" style={{ fontSize: 'clamp(18px, 3vw, 32px)', marginBottom: 16 }}>
+                    QUIZ ARCADE
+                </h1>
+                <p className="retro-subtitle">— CHOISISSEZ VOTRE DÉFI —</p>
+                <div style={{ width: 80, height: 2, background: 'var(--magenta)', margin: '20px auto 0', boxShadow: '0 0 10px var(--magenta)' }} />
             </div>
 
             {quizzes.length === 0 ? (
-                <div style={styles.emptyState}>
-                    <p style={{ fontSize: '1.2rem' }}>Pas de quiz disponible pour le moment.</p>
+                <div className="retro-card" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', borderColor: 'var(--magenta)' }}>
+                    <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 14, letterSpacing: '0.1em' }}>
+                        AUCUN QUIZ DISPONIBLE
+                    </p>
                 </div>
             ) : (
-                <div style={styles.grid}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 28 }}>
                     {quizzes.map((quiz) => (
                         <div
                             key={quiz._id}
-                            style={styles.card}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-10px)';
-                                e.currentTarget.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.4)';
-                                e.currentTarget.style.borderColor = '#3498db';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                            }}
+                            className="retro-card quiz-card"
+                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', borderColor: 'rgba(0,255,255,0.25)' }}
                         >
-                            <div style={{ marginBottom: '20px' }}>
-                                <h2 style={{ color: 'white', fontSize: '26px', fontWeight: '700', marginBottom: '10px' }}>
-                                    {quiz.title}
-                                </h2>
-                                <span style={{ color: '#a29bfe', fontSize: '14px', fontWeight: '600' }}>
-                                    Catégorie : <strong style={{ color: '#e84393' }}>{quiz.category}</strong>
-                                </span>
-                            </div>
+                            {/* Category badge */}
+                            <span style={{
+                                fontFamily: 'var(--font-hud)', fontSize: 10, letterSpacing: '0.15em',
+                                color: 'var(--magenta)', border: '1px solid var(--magenta)',
+                                padding: '3px 10px', marginBottom: 16,
+                                textTransform: 'uppercase',
+                                boxShadow: '0 0 8px rgba(255,0,255,0.2)',
+                            }}>
+                                {quiz.category || 'GÉNÉRAL'}
+                            </span>
 
-                            <p style={{ color: '#b2bec3', fontSize: '16px', lineHeight: '1.6', marginBottom: '30px' }}>
-                                {quiz.description || "Préparez-vous à relever ce défi passionnant !"}
+                            <h2 style={{
+                                fontFamily: 'var(--font-pixel)', fontSize: 14, color: 'var(--cyan)',
+                                textShadow: '0 0 8px var(--cyan)', lineHeight: 1.8,
+                                marginBottom: 12, flexGrow: 1,
+                            }}>
+                                {quiz.title}
+                            </h2>
+
+                            <p style={{ color: 'var(--dim)', fontSize: 13, lineHeight: 1.7, marginBottom: 24 }}>
+                                {quiz.description || 'Préparez-vous pour ce défi !'}
                             </p>
 
                             <Link
                                 to={`/quiz-details/${quiz._id}`}
-                                style={{
-                                    backgroundColor: '#3498db',
-                                    color: 'white',
-                                    padding: '12px 35px',
-                                    borderRadius: '12px',
-                                    textDecoration: 'none',
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    transition: 'background 0.3s ease',
-                                    boxShadow: '0 4px 15px rgba(52, 152, 219, 0.3)'
-                                }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = '#2980b9'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = '#3498db'}
+                                className="retro-btn"
+                                style={{ textDecoration: 'none', display: 'inline-block' }}
                             >
-                                Voir le Quiz
+                                ▶ JOUER
                             </Link>
                         </div>
                     ))}

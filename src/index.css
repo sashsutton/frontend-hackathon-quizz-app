@@ -1,71 +1,357 @@
+/* ─── RETRO SYNTHWAVE DESIGN SYSTEM ──────────────────────────── */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Neon palette */
+  --cyan: #00ffff;
+  --magenta: #ff00ff;
+  --green: #00ff41;
+  --yellow: #ffff00;
+  --orange: #ff6b00;
+  --white: #e8e8ff;
+  --dim: #8888aa;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Backgrounds */
+  --bg: #080812;
+  --bg-card: rgba(0, 0, 30, 0.85);
+  --bg-panel: rgba(0, 255, 255, 0.04);
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Fonts */
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-hud: 'Orbitron', sans-serif;
 }
 
+/* ─── GLOBAL RESET ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-  margin: 0;
-  min-width: 320px;
+  background-color: var(--bg);
+  color: var(--white);
+  font-family: var(--font-mono);
   min-height: 100vh;
+  overflow-x: hidden;
+  /* CRT scanlines overlay */
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Retro grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(to bottom, transparent 60%, var(--bg) 100%),
+    /* Grid lines */
+    linear-gradient(rgba(0, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 60px 60px, 60px 60px;
+  background-position: 0 0, -1px -1px, -1px -1px;
 }
 
-nav {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 1rem 0;
-  margin-bottom: 2rem;
+/* Perspective grid horizon glow */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 0, 255, 0.12) 0%, transparent 70%);
 }
 
-.nav-crumbs {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  list-style-type: none;
-  padding-left: 0;
-  margin: 0;
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  max-width: 100%;
+  padding: 0;
 }
 
-.nav-crumb {
-  display: inline-block;
+/* ─── TYPOGRAPHY ──────────────────────────────────────────────── */
+h1,
+h2,
+h3 {
+  font-family: var(--font-hud);
+  letter-spacing: 0.05em;
+}
+
+/* ─── NEON UTILITY CLASSES ────────────────────────────────────── */
+.neon-cyan {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan), 0 0 20px var(--cyan);
+}
+
+.neon-magenta {
+  color: var(--magenta);
+  text-shadow: 0 0 8px var(--magenta), 0 0 20px var(--magenta);
+}
+
+.neon-green {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green), 0 0 20px var(--green);
+}
+
+.neon-yellow {
+  color: var(--yellow);
+  text-shadow: 0 0 8px var(--yellow), 0 0 20px var(--yellow);
+}
+
+/* ─── RETRO CARD ──────────────────────────────────────────────── */
+.retro-card {
+  background: var(--bg-card);
+  border: 2px solid var(--cyan);
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2), inset 0 0 20px rgba(0, 255, 255, 0.03);
+  padding: 32px;
   position: relative;
 }
 
-.nav-crumb a {
-  color: rgba(255, 255, 255, 0.87);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+.retro-card::before {
+  content: '▶';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: var(--cyan);
+  font-size: 10px;
+  opacity: 0.5;
 }
 
-.nav-crumb a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
+/* ─── RETRO BUTTON ────────────────────────────────────────────── */
+.retro-btn {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 12px 28px;
+  cursor: pointer;
+  border: 2px solid var(--cyan);
+  background: transparent;
+  color: var(--cyan);
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  position: relative;
 }
 
-.nav-crumb a::after {
-  display: none;
+.retro-btn:hover {
+  background: var(--cyan);
+  color: var(--bg);
+  box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-.nav-crumb:last-child a::after {
-  display: none;
+.retro-btn-magenta {
+  border-color: var(--magenta);
+  color: var(--magenta);
 }
 
-.warning {
-  color: red;
+.retro-btn-magenta:hover {
+  background: var(--magenta);
+  color: var(--bg);
+  box-shadow: 0 0 20px var(--magenta), 0 0 40px rgba(255, 0, 255, 0.3);
+}
+
+.retro-btn-green {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.retro-btn-green:hover {
+  background: var(--green);
+  color: var(--bg);
+  box-shadow: 0 0 20px var(--green);
+}
+
+/* ─── RETRO INPUT / SELECT ────────────────────────────────────── */
+.retro-input,
+.retro-select {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: var(--white);
+  padding: 12px 16px;
+  width: 100%;
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.retro-input:focus,
+.retro-select:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.25);
+}
+
+.retro-select option {
+  background: #0a0a1a;
+}
+
+/* ─── RETRO LABEL ─────────────────────────────────────────────── */
+.retro-label {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ─── LOADING SPINNER ─────────────────────────────────────────── */
+@keyframes retro-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes retro-pulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85)
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15)
+  }
+}
+
+@keyframes flicker {
+
+  0%,
+  100% {
+    opacity: 1
+  }
+
+  92% {
+    opacity: 1
+  }
+
+  93% {
+    opacity: 0.8
+  }
+
+  95% {
+    opacity: 1
+  }
+
+  96% {
+    opacity: 0.7
+  }
+}
+
+@keyframes scanline {
+  0% {
+    top: -100%
+  }
+
+  100% {
+    top: 100%
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--cyan)
+  }
+
+  50% {
+    box-shadow: 0 0 25px var(--cyan), 0 0 50px rgba(0, 255, 255, 0.3)
+  }
+}
+
+.retro-spinner {
+  width: 64px;
+  height: 64px;
+  border: 3px solid rgba(0, 255, 255, 0.15);
+  border-top: 3px solid var(--cyan);
+  border-radius: 50%;
+  animation: retro-spin 0.8s linear infinite;
+  box-shadow: 0 0 15px var(--cyan);
+}
+
+.retro-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--magenta);
+  display: inline-block;
+  margin: 0 5px;
+  animation: retro-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--magenta);
+}
+
+.retro-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.retro-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ─── PAGE WRAPPER ────────────────────────────────────────────── */
+.retro-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+  flex-direction: column;
+}
+
+/* ─── SECTION TITLE ───────────────────────────────────────────── */
+.retro-title {
+  font-family: var(--font-pixel);
+  font-size: clamp(16px, 3vw, 28px);
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0, 255, 255, 0.4);
+  text-align: center;
+  letter-spacing: 0.05em;
+  animation: flicker 8s infinite;
+}
+
+.retro-subtitle {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  color: var(--magenta);
+  text-shadow: 0 0 8px var(--magenta);
+  text-align: center;
+  letter-spacing: 0.15em;
+  margin-top: 10px;
+}
+
+/* ─── SCROLLBAR ───────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cyan);
+  border-radius: 0;
 }

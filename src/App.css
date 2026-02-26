@@ -1,32 +1,10 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-body, html {
-  margin: 0;
-  padding: 0;
-  background-color: #1a1a2e; 
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-.quiz-card {
-  transition: all 0.3s ease !important;
-}
-
-.quiz-card:hover {
-  transform: translateY(-10px); 
-  border-color: #e84393 !important; 
-  box-shadow: 0 0 20px rgba(232, 67, 147, 0.6) !important; 
-  background-color: #1c2a4e !important; 
-}
+/* ─── NAVBAR ──────────────────────────────────────────────────── */
 .navbar {
-  background-color: rgba(15, 12, 41, 0.97);
-  padding: 0 40px;
-  height: 64px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(4, 4, 20, 0.97);
+  border-bottom: 2px solid var(--cyan);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15), 0 2px 0 rgba(0, 255, 255, 0.1);
+  padding: 0 32px;
+  height: 60px;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -41,82 +19,105 @@ body, html {
 }
 
 .nav-logo {
-  font-size: 1.3rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #e84393, #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan), 0 0 25px rgba(0, 255, 255, 0.5);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  animation: flicker 8s infinite;
 }
 
 .nav-crumbs {
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   margin: 0;
   padding: 0;
 }
 
 .nav-crumb a {
-  color: #a29bfe;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
 }
 
 .nav-crumb a:hover {
-  color: white;
-  background: rgba(255,255,255,0.08);
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  background: rgba(0, 255, 255, 0.05);
 }
 
+/* Auth buttons */
 .nav-btn {
-  padding: 7px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+  border: 1px solid;
+  background: transparent;
+  transition: all 0.15s ease;
 }
 
 .nav-btn-outline {
-  background: transparent;
-  border: 1.5px solid rgba(162, 155, 254, 0.5);
-  color: #a29bfe;
+  border-color: rgba(0, 255, 255, 0.4);
+  color: var(--cyan);
 }
 
 .nav-btn-outline:hover {
-  border-color: #a29bfe;
-  background: rgba(162, 155, 254, 0.1);
-  color: white;
+  background: rgba(0, 255, 255, 0.1);
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
 }
 
 .nav-btn-primary {
-  background: linear-gradient(135deg, #e84393, #a855f7);
-  color: white;
+  border-color: var(--magenta);
+  color: var(--magenta);
 }
 
 .nav-btn-primary:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
+  background: var(--magenta);
+  color: var(--bg);
+  box-shadow: 0 0 16px var(--magenta);
 }
 
+/* Clerk user button size */
 .cl-userButtonTrigger {
   transform: scale(1.1);
 }
 
+/* ─── QUIZ CARD HOVER (QuizListPage) ─────────────────────────── */
+.quiz-card {
+  transition: all 0.2s ease !important;
+  border-color: rgba(0, 255, 255, 0.2) !important;
+}
+
+.quiz-card:hover {
+  transform: translateY(-6px) !important;
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.35) !important;
+}
+
+/* ─── UPLOAD BOX ──────────────────────────────────────────────── */
 .upload-box-interactive {
-    transition: all 0.3s ease-in-out !important;
+  transition: all 0.2s ease-in-out !important;
+  border-color: rgba(0, 255, 255, 0.2) !important;
 }
 
 .upload-box-interactive:hover {
-    background-color: #243b6b !important; 
-    border-color: #e84393 !important;      
-    box-shadow: 0 0 25px rgba(232, 67, 147, 0.5) !important; 
-    transform: scale(1.02);                
+  border-color: var(--magenta) !important;
+  box-shadow: 0 0 25px rgba(255, 0, 255, 0.3) !important;
+  transform: scale(1.01);
 }

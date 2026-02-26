@@ -29,114 +29,104 @@ export default function DuelResultPage() {
         })();
     }, [isLoaded]);
 
-    if (loading) {
-        return (
-            <div style={s.page}>
-                <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-                <div style={{ width: 70, height: 70, borderRadius: '50%', border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid #f1c40f', animation: 'spin 1s linear infinite' }} />
-            </div>
-        );
-    }
+    if (loading) return (
+        <div className="retro-page">
+            <div className="retro-spinner" />
+        </div>
+    );
 
-    if (!duel) return <div style={s.page}><p>Duel introuvable.</p></div>;
+    if (!duel) return (
+        <div className="retro-page">
+            <p style={{ fontFamily: 'var(--font-pixel)', color: 'var(--magenta)', fontSize: 13 }}>DUEL INTROUVABLE</p>
+        </div>
+    );
 
     const isPlayer1 = duel.player1_id === myClerkId;
     const myScore = isPlayer1 ? duel.player1_score : duel.player2_score;
     const opponentScore = isPlayer1 ? duel.player2_score : duel.player1_score;
     const myName = isPlayer1 ? duel.player1_name : duel.player2_name;
     const opponentName = isPlayer1 ? duel.player2_name : duel.player1_name;
-
     const won = duel.winner_id === myClerkId;
     const draw = !duel.winner_id && duel.status === 'finished';
 
-    const resultEmoji = won ? '🏆' : draw ? '🤝' : '💀';
-    const resultText = won ? 'Victoire !' : draw ? 'Égalité !' : 'Défaite...';
-    const resultColor = won ? '#2ecc71' : draw ? '#f1c40f' : '#e74c3c';
-    const eloChange = won ? '+20' : draw ? '±0' : '-20';
+    const result = won ? { text: 'VICTORY', color: 'var(--green)', elo: '+20' }
+        : draw ? { text: 'DRAW', color: 'var(--yellow)', elo: '±0' }
+            : { text: 'DEFEAT', color: 'var(--magenta)', elo: '-20' };
 
     return (
-        <div style={s.page}>
-            <div style={s.card}>
-                {/* Result header */}
+        <div className="retro-page" style={{ paddingTop: 80 }}>
+            <div style={{ width: '100%', maxWidth: 600 }}>
+                {/* Result banner */}
                 <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                    <div style={{ fontSize: 72 }}>{resultEmoji}</div>
-                    <h1 style={{ fontSize: 40, color: resultColor, margin: '12px 0 4px' }}>{resultText}</h1>
-                    <p style={{ color: '#a29bfe', fontSize: 18 }}>
-                        ELO : <strong style={{ color: resultColor }}>{eloChange}</strong>
+                    <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 'clamp(28px, 5vw, 52px)', color: result.color, textShadow: `0 0 20px ${result.color}, 0 0 60px ${result.color}66`, marginBottom: 12 }}>
+                        {result.text}
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--dim)', fontSize: 13, letterSpacing: '0.1em' }}>
+                        ELO : <span style={{ color: result.color, textShadow: `0 0 8px ${result.color}` }}>{result.elo}</span>
                     </p>
                 </div>
 
-                {/* Score board */}
-                <div style={s.scoreboard}>
-                    <div style={s.player}>
-                        <div style={{ ...s.playerAvatar, boxShadow: won ? '0 0 20px rgba(46,204,113,0.5)' : 'none' }}>
-                            {(myName?.[0] ?? '?').toUpperCase()}
+                {/* Scoreboard */}
+                <div className="retro-card" style={{ marginBottom: 24 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 16 }}>
+                        {/* Me */}
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                width: 60, height: 60, margin: '0 auto 12px',
+                                border: `2px solid ${won ? 'var(--green)' : 'var(--dim)'}`,
+                                boxShadow: won ? '0 0 15px var(--green)' : 'none',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontFamily: 'var(--font-pixel)', fontSize: 24,
+                                color: won ? 'var(--green)' : 'var(--dim)',
+                            }}>
+                                {(myName?.[0] ?? '?').toUpperCase()}
+                            </div>
+                            <p style={{ fontFamily: 'var(--font-hud)', fontSize: 12, color: 'var(--cyan)', marginBottom: 8 }}>
+                                {myName ?? 'VOUS'}
+                                <span style={{ fontSize: 9, color: 'var(--dim)', display: 'block' }}>[YOU]</span>
+                            </p>
+                            <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 36, color: won ? 'var(--green)' : 'var(--white)', textShadow: won ? '0 0 15px var(--green)' : 'none' }}>
+                                {myScore}
+                            </p>
                         </div>
-                        <p style={s.playerName}>{myName ?? 'Vous'} <span style={{ color: '#a29bfe', fontSize: 13 }}>(vous)</span></p>
-                        <p style={{ ...s.playerScore, color: resultColor }}>{myScore}</p>
-                    </div>
 
-                    <div style={s.vs}>VS</div>
-
-                    <div style={s.player}>
-                        <div style={{ ...s.playerAvatar, background: 'linear-gradient(135deg, #3498db, #2c3e50)', boxShadow: !won && !draw ? '0 0 20px rgba(46,204,113,0.5)' : 'none' }}>
-                            {(opponentName?.[0] ?? '?').toUpperCase()}
+                        {/* VS */}
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 18, color: 'var(--magenta)', textShadow: '0 0 10px var(--magenta)', textAlign: 'center' }}>
+                            VS
                         </div>
-                        <p style={s.playerName}>{opponentName ?? 'Adversaire'}</p>
-                        <p style={{ ...s.playerScore, color: !won && !draw ? '#2ecc71' : '#e74c3c' }}>{opponentScore}</p>
+
+                        {/* Opponent */}
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                width: 60, height: 60, margin: '0 auto 12px',
+                                border: `2px solid ${!won && !draw ? 'var(--green)' : 'var(--dim)'}`,
+                                boxShadow: !won && !draw ? '0 0 15px var(--green)' : 'none',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontFamily: 'var(--font-pixel)', fontSize: 24,
+                                color: !won && !draw ? 'var(--green)' : 'var(--dim)',
+                            }}>
+                                {(opponentName?.[0] ?? '?').toUpperCase()}
+                            </div>
+                            <p style={{ fontFamily: 'var(--font-hud)', fontSize: 12, color: 'var(--dim)', marginBottom: 8 }}>
+                                {opponentName ?? 'ADVERSAIRE'}
+                            </p>
+                            <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 36, color: !won && !draw ? 'var(--green)' : 'var(--dim)' }}>
+                                {opponentScore}
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Buttons */}
-                <div style={{ display: 'flex', gap: 16, marginTop: 36 }}>
-                    <button onClick={() => navigate('/duel')} style={s.btn}>
-                        ⚔️ Nouveau duel
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: 16 }}>
+                    <button onClick={() => navigate('/duel')} className="retro-btn retro-btn-magenta" style={{ flex: 1, padding: 14, fontSize: 11, letterSpacing: '0.15em' }}>
+                        ⚔ NOUVEAU DUEL
                     </button>
-                    <button onClick={() => navigate('/leaderboard')} style={{ ...s.btn, background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(255,255,255,0.2)' }}>
-                        🏆 Classement
+                    <button onClick={() => navigate('/leaderboard')} className="retro-btn" style={{ flex: 1, padding: 14, fontSize: 11, letterSpacing: '0.15em' }}>
+                        ▶ CLASSEMENT
                     </button>
                 </div>
             </div>
         </div>
     );
 }
-
-const s = {
-    page: {
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 20,
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        color: 'white',
-    },
-    card: {
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 24, padding: '48px 40px',
-        width: '100%', maxWidth: 620,
-    },
-    scoreboard: {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(255,255,255,0.04)',
-        borderRadius: 20, padding: '32px 24px',
-        border: '1px solid rgba(255,255,255,0.08)',
-    },
-    player: { textAlign: 'center', flex: 1 },
-    playerAvatar: {
-        width: 70, height: 70, borderRadius: '50%',
-        background: 'linear-gradient(135deg, #e84393, #a855f7)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 30, fontWeight: 'bold', color: 'white',
-        margin: '0 auto 12px',
-    },
-    playerName: { margin: '0 0 8px', fontSize: 16, fontWeight: '600' },
-    playerScore: { margin: 0, fontSize: 48, fontWeight: '900' },
-    vs: { fontSize: 24, color: '#636e72', fontWeight: '900', flexShrink: 0, padding: '0 16px' },
-    btn: {
-        flex: 1, padding: '14px',
-        background: 'linear-gradient(135deg, #e84393, #a855f7)',
-        border: 'none', borderRadius: 12,
-        color: 'white', fontSize: 16, fontWeight: 'bold', cursor: 'pointer',
-    },
-};
