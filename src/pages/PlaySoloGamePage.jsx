@@ -11,13 +11,14 @@ function PlaySoloGamePage() {
     const navigate = useNavigate();
     const { getToken, isLoaded } = useAuth();
 
-    const [phase, setPhase] = useState("loading"); // loading | error | playing | submitting | finished
+    const [phase, setPhase] = useState("loading"); // loading | blocked | error | playing | submitting | finished
     const [quiz, setQuiz] = useState(null);
     const [qIndex, setQIndex] = useState(0);
     const [timer, setTimer] = useState(TIMER_SECONDS);
     const [score, setScore] = useState(0);
     const [details, setDetails] = useState([]);
     const [errorMsg, setErrorMsg] = useState("");
+    const [isResume, setIsResume] = useState(false);
 
     // Refs so callbacks always have fresh values
     const sessionId = useRef(null);
@@ -41,18 +42,15 @@ function PlaySoloGamePage() {
         const questions = quizRef.current?.questions ?? [];
 
         if (nextIndex >= questions.length) {
-            // Quiz terminé — soumettre
             stopTimer();
             setPhase("submitting");
             try {
                 const token = await getToken();
-                console.log("[SUBMIT] Sending answers:", JSON.stringify(answers));
                 const res = await axios.post(`${API}/quiz/submit-solo`, {
                     session_id: sessionId.current,
                     quiz_id: quizId,
                     answers,
                 }, { headers: { Authorization: `Bearer ${token}` } });
-                console.log("[SUBMIT] Response:", res.data);
                 setScore(res.data.score ?? 0);
                 setDetails(res.data.details ?? []);
             } catch (e) {
@@ -102,7 +100,7 @@ function PlaySoloGamePage() {
         return stopTimer;
     }, [phase, qIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // ─── Load quiz ───────────────────────────────────────────────────────────────
+    // ─── Load quiz ─────────────────────────────────────────────────────────────
     useEffect(() => {
         if (!isLoaded || hasStarted.current) return;
         hasStarted.current = true;
@@ -111,40 +109,53 @@ function PlaySoloGamePage() {
             try {
                 const token = await getToken();
 
-                // 1. Créer la session solo
+                // 1. Check / create solo session
                 const sessRes = await axios.post(
                     `${API}/quiz/soloquiz/${quizId}`,
                     {},
                     { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (!sessRes.data.success) throw new Error("Session creation failed");
-                sessionId.current = sessRes.data.session_id;
+                ).catch(err => err.response); // catch 409 without throwing
 
-                // 2. Charger le quiz (sans les bonnes réponses)
+                if (!sessRes || !sessRes.data) throw new Error("Erreur de connexion au serveur.");
+
+                const { status, session_id } = sessRes.data;
+
+                if (status === 'finished') {
+                    // User already completed — block
+                    setPhase('blocked');
+                    return;
+                }
+
+                if (status === 'in_progress') {
+                    // Resume existing session
+                    sessionId.current = session_id;
+                    setIsResume(true);
+                } else {
+                    // 'new' — fresh session
+                    sessionId.current = sessRes.data.session_id;
+                }
+
+                // 2. Load quiz questions (correct_answer stripped on backend)
                 const quizRes = await axios.get(
                     `${API}/quiz/${quizId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
-                if (!quizRes.data.success) throw new Error("Quiz load failed");
+                if (!quizRes.data.success) throw new Error("Quiz introuvable.");
 
                 const loadedQuiz = quizRes.data.quiz;
-                console.log("Quiz loaded:", loadedQuiz);
-
-                if (!loadedQuiz?.questions?.length) {
-                    throw new Error("Ce quiz n'a pas de questions.");
-                }
+                if (!loadedQuiz?.questions?.length) throw new Error("Ce quiz n'a pas de questions.");
 
                 quizRef.current = loadedQuiz;
                 setQuiz(loadedQuiz);
-                setPhase("playing");
+                setPhase('playing');
 
             } catch (err) {
-                console.error("Load error:", err);
                 setErrorMsg(err.message || "Erreur lors du chargement.");
-                setPhase("error");
+                setPhase('error');
             }
         })();
     }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
     // ─── Render ──────────────────────────────────────────────────────────────────
 
@@ -172,6 +183,33 @@ function PlaySoloGamePage() {
                     <h2 style={{ fontFamily: 'var(--font-pixel)', fontSize: 13, color: 'var(--cyan)', textShadow: '0 0 10px var(--cyan)', marginBottom: 16 }}>CHARGEMENT...</h2>
                     <p style={{ color: 'var(--dim)', fontSize: 12, fontFamily: 'var(--font-hud)', letterSpacing: '0.1em', marginBottom: 20 }}>PRÉPARATION DU QUIZ</p>
                     <div><span className="retro-dot" /><span className="retro-dot" /><span className="retro-dot" /></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (phase === "blocked") {
+        return (
+            <div style={pageStyle}>
+                <div style={cardStyle}>
+                    <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 48, color: 'var(--magenta)', textShadow: '0 0 20px var(--magenta)', marginBottom: 24 }}>
+                        🔒
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 13, color: 'var(--magenta)', textShadow: '0 0 12px var(--magenta)', marginBottom: 12 }}>
+                        ACCÈS BLOQUÉ
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--dim)', fontSize: 12, letterSpacing: '0.08em', lineHeight: 1.8, marginBottom: 32 }}>
+                        Vous avez déjà complété ce quiz.<br />
+                        Chaque quiz ne peut être joué qu'une seule fois en solo.
+                    </p>
+                    <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button onClick={() => navigate('/quiz-list')} className="retro-btn retro-btn-magenta" style={{ fontSize: 11, letterSpacing: '0.15em', padding: '12px 28px' }}>
+                            ◀ AUTRE QUIZ
+                        </button>
+                        <button onClick={() => navigate('/leaderboard')} className="retro-btn" style={{ fontSize: 11, letterSpacing: '0.15em', padding: '12px 28px' }}>
+                            ▶ CLASSEMENT
+                        </button>
+                    </div>
                 </div>
             </div>
         );
