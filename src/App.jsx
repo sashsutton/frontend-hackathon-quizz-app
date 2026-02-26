@@ -11,7 +11,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import QuizList from './pages/MockQuizLisPage.jsx';
 =======
 import QuizPage from './pages/QuizPage.jsx';
+<<<<<<< HEAD
 >>>>>>> b7e65b7ed42ac86b7b05b4a003c0c2fbb95069ca
+=======
+import PlaySoloGamePage from './pages/PlaySoloGamePage.jsx';
+>>>>>>> 77f0be4 (Quiz en solo, implémentation de la partie (avec des questions placeholder))
 
 function App() {
 
@@ -37,7 +41,12 @@ function App() {
 =======
               <Route path="/quiz-list" element={<QuizListPage/>}/>
               <Route path="/quiz-list/:quizId" element={<QuizPage/>}/>
+<<<<<<< HEAD
 >>>>>>> b7e65b7ed42ac86b7b05b4a003c0c2fbb95069ca
+=======
+
+              <Route path="/play-solo/:quizId" element={<PlaySoloGamePage/>}/>
+>>>>>>> 77f0be4 (Quiz en solo, implémentation de la partie (avec des questions placeholder))
           </Routes>
 
       </div>
