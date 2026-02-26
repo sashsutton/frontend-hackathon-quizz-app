@@ -1,6 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 
-
+import { Link } from 'react-router-dom';
 function Navbar() {
 
     return(
@@ -9,7 +9,7 @@ function Navbar() {
         <ul className="nav-crumbs">
             <li className="nav-crumb"><a href="/">Accueil</a></li>
             <li className="nav-crumb"><a href="/play">Jouer</a></li>
-            <li className="nav-crumb"><a href="/make">Créer</a></li>
+            <Link to="/make">Créer un Quiz</Link>
             <li className="nav-crumb"><a href="/quiz-list">Liste des quiz</a></li>
 
             <SignedOut>

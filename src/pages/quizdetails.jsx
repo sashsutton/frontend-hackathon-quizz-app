@@ -1,24 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react'; 
 import axios from 'axios';
 
 function QuizDetailsPage() {
-    const { id } = useParams(); 
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { isLoaded, isSignedIn, getToken } = useAuth(); 
+
     const [quiz, setQuiz] = useState(null);
 
     useEffect(() => {
         const fetchQuizDetails = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:5000/quizzes/${id}`);
+                const token = await getToken(); 
+                
+                const response = await axios.get(`http://127.0.0.1:5000/quizzes/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` 
+                    }
+                });
                 setQuiz(response.data);
             } catch (error) {
-                console.error("Erreur :", error);
-            }
+                console.error("Token not verified ", error);
+            } 
         };
-        fetchQuizDetails();
-    }, [id]);
 
-    if (!quiz) return <div style={{ textAlign: 'center', padding: '50px' }}>Chargement des détails...</div>;
+        if (isLoaded) {
+            fetchQuizDetails();
+        }
+    }, [id, isLoaded, getToken]);
+
+    const handleStart = () => {
+        if (!isSignedIn) {
+            navigate('/sign-up'); 
+        } else {
+            navigate(`/game/${quiz._id}`);
+        }
+    };
+
+    if (!quiz) return <div style={{ textAlign: 'center', padding: '50px' }}>Quiz introuvable </div>;
 
     return (
         <div style={{ padding: '40px', maxWidth: '700px', margin: '40px auto', backgroundColor: 'white', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', textAlign: 'center' }}>
@@ -42,22 +63,23 @@ function QuizDetailsPage() {
                 </p>
             </div>
 
-            <Link 
-                to={`/game/${quiz._id}`} 
+            <button 
+                onClick={handleStart}
                 style={{
                     display: 'inline-block',
                     backgroundColor: '#3498db',
                     color: 'white',
                     padding: '15px 50px',
                     borderRadius: '12px',
-                    textDecoration: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
                     fontWeight: 'bold',
                     fontSize: '18px',
                     boxShadow: '0 4px 15px rgba(52, 152, 219, 0.4)'
                 }}
             >
                 Commencer le Quiz 
-            </Link>
+            </button>
         </div>
     );
 }
