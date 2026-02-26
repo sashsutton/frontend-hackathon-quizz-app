@@ -15,11 +15,12 @@ function QuizDetailsPage() {
             try {
                 const token = await getToken(); 
                 
-                const response = await axios.get(`http://127.0.0.1:5000/quizzes/${id}`, {
+                const response = await axios.get(`http://127.0.0.1:5000/quiz/page/${id}`, {
                     headers: {
-                        Authorization: `Bearer ${token}` 
+                        Authorization: `Bearer ${token}`,
                     }
                 });
+
                 setQuiz(response.data);
             } catch (error) {
                 console.error("Token not verified ", error);

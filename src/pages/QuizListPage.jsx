@@ -1,43 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; 
+import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 
 function QuizListPage() {
     const [quizzes, setQuizzes] = useState([]);
+    const { getToken, isLoaded, isSignedIn } = useAuth();
 
     useEffect(() => {
+        if (!isLoaded) return;
+
         const fetchQuizzes = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:5000/quizzes');
-                setQuizzes(response.data); 
+                const token = await getToken();
+                const response = await axios.get('http://127.0.0.1:5000/quiz/get-all-quizzes', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setQuizzes(response.data);
             } catch (error) {
                 console.error("Erreur serveur :", error);
             }
         };
 
         fetchQuizzes();
-    }, []); 
+    }, [isLoaded]);
 
-const styles = {
-        container: { 
-            padding: '60px 20px', 
-            backgroundColor: '#1a1a2e', 
+    const styles = {
+        container: {
+            padding: '60px 20px',
+            backgroundColor: '#1a1a2e',
             minHeight: '100vh',
             color: 'white',
             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
         },
         header: { marginBottom: '50px', textAlign: 'center' },
         title: { fontSize: '3.5rem', fontWeight: '800', marginBottom: '10px' },
-        underline: { 
-            width: '60px', height: '4px', backgroundColor: '#e84393', 
-            margin: '20px auto', borderRadius: '2px' 
+        underline: {
+            width: '60px', height: '4px', backgroundColor: '#e84393',
+            margin: '20px auto', borderRadius: '2px'
         },
-        grid: { 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: '30px', 
-            maxWidth: '1200px', 
-            margin: '0 auto' 
+        grid: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '30px',
+            maxWidth: '1200px',
+            margin: '0 auto'
         },
         card: {
             padding: '40px',
@@ -46,8 +55,8 @@ const styles = {
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center', 
-            textAlign: 'center',    
+            alignItems: 'center',
+            textAlign: 'center',
             transition: 'all 0.3s ease',
             border: '1px solid rgba(255,255,255,0.05)'
         },
@@ -77,8 +86,8 @@ const styles = {
             ) : (
                 <div style={styles.grid}>
                     {quizzes.map((quiz) => (
-                        <div 
-                            key={quiz._id} 
+                        <div
+                            key={quiz._id}
                             style={styles.card}
                             onMouseOver={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-10px)';
@@ -104,8 +113,8 @@ const styles = {
                                 {quiz.description || "Préparez-vous à relever ce défi passionnant !"}
                             </p>
 
-                            <Link 
-                                to={`/quiz-details/${quiz._id}`} 
+                            <Link
+                                to={`/quiz-details/${quiz._id}`}
                                 style={{
                                     backgroundColor: '#3498db',
                                     color: 'white',

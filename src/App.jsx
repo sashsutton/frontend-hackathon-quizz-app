@@ -9,7 +9,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import PlaySoloPage from "./pages/PlaySoloPage.jsx"; 
 import QuizDetailsPage from "./pages/quizdetails.jsx"; 
-import MockQuizList from './pages/MockQuizLisPage.jsx'; 
+import MockQuizList from './pages/MockQuizLisPage.jsx';
+import QuizPage from "./pages/QuizPage.jsx";
+import Quizdetails from "./pages/quizdetails.jsx";
 
 function App() {
   return (
@@ -28,7 +30,7 @@ function App() {
 
               <Route path="/quiz-list" element={<QuizListPage />} />
 
-              <Route path="/quiz-details/:id" element={<QuizDetailsPage />} />
+              <Route path="/quiz-details/:id" element={<Quizdetails />} />
 
               <Route path="/make" element={
                 <ProtectedRoute>
