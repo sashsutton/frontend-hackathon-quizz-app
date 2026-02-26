@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom"
 import Navbar from './components/Navbar.jsx'
 import HomePage from "./pages/HomePage.jsx";
 import QuizListPage from "./pages/QuizListPage.jsx";
-import PlayPage from "./pages/PlayPage.jsx";
 import MakePage from "./pages/MakePage.jsx";
 import ProtectedRoute from './components/ProtectedRoute';
 import PlaySoloGamePage from "./pages/PlaySoloGamePage.jsx";
@@ -21,10 +20,6 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
 
-        <Route path="/play" element={
-          <ProtectedRoute><PlayPage /></ProtectedRoute>
-        } />
-
         <Route path="/play/:id" element={
           <ProtectedRoute><PlaySoloGamePage /></ProtectedRoute>
         } />
@@ -36,13 +31,11 @@ function App() {
           <ProtectedRoute><MakePage /></ProtectedRoute>
         } />
 
-        {/* Profile & Leaderboard */}
         <Route path="/profile" element={
           <ProtectedRoute><ProfilePage /></ProtectedRoute>
         } />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
 
-        {/* Duels */}
         <Route path="/duel" element={
           <ProtectedRoute><DuelLobbyPage /></ProtectedRoute>
         } />

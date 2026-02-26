@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 const API = 'http://127.0.0.1:5000';
 const TIMER_SECONDS = 30;
@@ -15,36 +16,69 @@ export default function PlayDuelPage() {
     const [quiz, setQuiz] = useState(null);
     const [qIndex, setQIndex] = useState(0);
     const [timer, setTimer] = useState(TIMER_SECONDS);
+    const [opponentDone, setOpponentDone] = useState(false);
 
     const quizRef = useRef(null);
     const qIndexRef = useRef(0);
     const answersRef = useRef([]);
     const intervalRef = useRef(null);
     const hasStarted = useRef(false);
+    const socketRef = useRef(null);
 
     const stopTimer = useCallback(() => {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
     }, []);
 
+    // Load duel + quiz, then connect to socket room
     useEffect(() => {
         if (!isLoaded || hasStarted.current) return;
         hasStarted.current = true;
         (async () => {
             try {
                 const token = await getToken();
-                const [duelRes] = await Promise.all([
-                    axios.get(`${API}/duel/${duelId}`, { headers: { Authorization: `Bearer ${token}` } }),
-                ]);
+                const duelRes = await axios.get(`${API}/duel/${duelId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 const d = duelRes.data.duel;
-                const quizRes = await axios.get(`${API}/quiz/${d.quiz_id}`, { headers: { Authorization: `Bearer ${token}` } });
+                const quizRes = await axios.get(`${API}/quiz/${d.quiz_id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 const loadedQuiz = quizRes.data.quiz;
                 quizRef.current = loadedQuiz;
                 setQuiz(loadedQuiz);
-                setPhase('playing');
-            } catch (e) { console.error(e); setPhase('error'); }
-        })();
-    }, [isLoaded]);
 
+                // Connect WebSocket and join the duel room
+                const socket = io(API, { transports: ['websocket'] });
+                socketRef.current = socket;
+
+                socket.on('connect', () => {
+                    socket.emit('duel:join_room', { duel_id: duelId });
+                });
+
+                // Opponent finished: show indicator
+                socket.on('duel:progress', (data) => {
+                    if (data.player_id !== socket.id) {
+                        setOpponentDone(true);
+                    }
+                });
+
+                // Both done: navigate to results
+                socket.on('duel:finished', () => {
+                    socket.disconnect();
+                    navigate(`/duel/result/${duelId}`);
+                });
+
+                setPhase('playing');
+            } catch (e) {
+                console.error(e);
+                setPhase('error');
+            }
+        })();
+
+        return () => { socketRef.current?.disconnect(); };
+    }, [isLoaded]); // eslint-disable-line
+
+    // Timer effect (re-runs when qIndex changes)
     useEffect(() => {
         if (phase !== 'playing') return;
         stopTimer();
@@ -67,24 +101,34 @@ export default function PlayDuelPage() {
         answersRef.current = updated;
         const nextIndex = qIndexRef.current + 1;
         const questions = quizRef.current?.questions ?? [];
+
         if (nextIndex >= questions.length) {
+            // Submit answers via HTTP
             setPhase('submitting');
             try {
                 const token = await getToken();
-                const res = await axios.post(`${API}/duel/${duelId}/submit`, { answers: updated }, { headers: { Authorization: `Bearer ${token}` } });
+                const res = await axios.post(`${API}/duel/${duelId}/submit`, { answers: updated }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                // Notify socket room this player is done
+                socketRef.current?.emit('duel:answer_submitted', {
+                    duel_id: duelId,
+                    player_id: socketRef.current.id,
+                    score: res.data.score,
+                    both_done: res.data.both_done,
+                });
+
                 if (res.data.both_done) {
+                    socketRef.current?.disconnect();
                     navigate(`/duel/result/${duelId}`);
                 } else {
                     setPhase('waiting');
-                    const poll = setInterval(async () => {
-                        try {
-                            const t = await getToken();
-                            const r = await axios.get(`${API}/duel/${duelId}`, { headers: { Authorization: `Bearer ${t}` } });
-                            if (r.data.duel?.status === 'finished') { clearInterval(poll); navigate(`/duel/result/${duelId}`); }
-                        } catch (_) { }
-                    }, 2000);
                 }
-            } catch (e) { console.error(e); navigate(`/duel/result/${duelId}`); }
+            } catch (e) {
+                console.error(e);
+                navigate(`/duel/result/${duelId}`);
+            }
         } else {
             qIndexRef.current = nextIndex;
             setQIndex(nextIndex);
@@ -106,7 +150,8 @@ export default function PlayDuelPage() {
 
     if (phase === 'submitting') return (
         <div className="retro-page">
-            <p style={{ fontFamily: 'var(--font-pixel)', color: 'var(--cyan)', fontSize: 14 }}>ENVOI...</p>
+            <div className="retro-spinner" />
+            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--cyan)', marginTop: 24, letterSpacing: '0.15em', fontSize: 12 }}>ENVOI DES RÉPONSES...</p>
         </div>
     );
 
@@ -116,8 +161,11 @@ export default function PlayDuelPage() {
             <p style={{ fontFamily: 'var(--font-pixel)', color: 'var(--green)', fontSize: 14, marginBottom: 24, textShadow: '0 0 12px var(--green)' }}>
                 QUIZ TERMINÉ !
             </p>
-            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 12, letterSpacing: '0.15em', animation: 'blink 1.2s infinite' }}>
-                EN ATTENTE DE L'ADVERSAIRE...
+            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 11, letterSpacing: '0.15em', animation: 'blink 1.2s infinite' }}>
+                EN ATTENTE VIA WEBSOCKET...
+            </p>
+            <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--dim)', fontSize: 11, marginTop: 8 }}>
+                Vous serez redirigé automatiquement quand l'adversaire termine.
             </p>
         </div>
     );
@@ -138,19 +186,21 @@ export default function PlayDuelPage() {
                             <div style={{ width: `${timerPct}%`, height: '100%', background: timerColor, boxShadow: `0 0 8px ${timerColor}`, transition: 'width 1s linear' }} />
                         </div>
                     </div>
-                    <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--cyan)', letterSpacing: '0.1em' }}>
-                        Q{qIndex + 1}/{quiz?.questions?.length}
-                    </span>
+                    <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--cyan)', letterSpacing: '0.1em' }}>
+                            Q{qIndex + 1}/{quiz?.questions?.length}
+                        </span>
+                        {opponentDone && (
+                            <div style={{ fontFamily: 'var(--font-hud)', fontSize: 9, color: 'var(--yellow)', marginTop: 4 }}>
+                                ADV. TERMINÉ ✓
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Question */}
                 {currentQ && (
                     <>
-                        <p style={{
-                            fontFamily: 'var(--font-mono)', fontSize: 17, lineHeight: 1.8,
-                            color: 'var(--white)', marginBottom: 32,
-                            borderLeft: '3px solid var(--cyan)', paddingLeft: 16,
-                        }}>
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 17, lineHeight: 1.8, color: 'var(--white)', marginBottom: 32, borderLeft: '3px solid var(--cyan)', paddingLeft: 16 }}>
                             {currentQ.text}
                         </p>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -158,28 +208,11 @@ export default function PlayDuelPage() {
                                 <button
                                     key={i}
                                     onClick={() => handleRecord(opt)}
-                                    style={{
-                                        padding: '16px 20px', cursor: 'pointer',
-                                        fontFamily: 'var(--font-mono)', fontSize: 14,
-                                        color: 'var(--white)', textAlign: 'left',
-                                        background: 'rgba(255,0,255,0.04)',
-                                        border: '1px solid rgba(255,0,255,0.3)',
-                                        transition: 'all 0.15s',
-                                    }}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'rgba(255,0,255,0.15)';
-                                        e.currentTarget.style.borderColor = 'var(--magenta)';
-                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(255,0,255,0.3)';
-                                        e.currentTarget.style.color = 'var(--magenta)';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'rgba(255,0,255,0.04)';
-                                        e.currentTarget.style.borderColor = 'rgba(255,0,255,0.3)';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                        e.currentTarget.style.color = 'var(--white)';
-                                    }}
+                                    style={{ padding: '16px 20px', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--white)', textAlign: 'left', background: 'rgba(255,0,255,0.04)', border: '1px solid rgba(255,0,255,0.3)', transition: 'all 0.15s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,0,255,0.15)'; e.currentTarget.style.borderColor = 'var(--magenta)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(255,0,255,0.3)'; e.currentTarget.style.color = 'var(--magenta)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,0,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,0,255,0.3)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.color = 'var(--white)'; }}
                                 >
-                                    <span style={{ color: 'var(--magenta)', fontFamily: 'var(--font-pixel)', fontSize: 10, marginRight: 12 }}>
+                                    <span style={{ fontFamily: 'var(--font-pixel)', fontSize: 10, color: 'var(--magenta)', marginRight: 12 }}>
                                         {String.fromCharCode(65 + i)}.
                                     </span>
                                     {opt}
