@@ -295,9 +295,16 @@ function PlaySoloGamePage() {
                             <div style={{ width: `${timerPct}%`, height: '100%', background: timerColor, boxShadow: `0 0 8px ${timerColor}`, transition: 'width 1s linear' }} />
                         </div>
                     </div>
-                    <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--dim)', letterSpacing: '0.05em', maxWidth: 140, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        SOLO
-                    </span>
+                    <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontFamily: 'var(--font-hud)', fontSize: 11, color: 'var(--dim)', letterSpacing: '0.05em' }}>
+                            SOLO
+                        </span>
+                        {isResume && (
+                            <div style={{ fontFamily: 'var(--font-hud)', fontSize: 9, color: 'var(--yellow)', letterSpacing: '0.1em', marginTop: 4, border: '1px solid var(--yellow)', padding: '2px 6px', display: 'inline-block' }}>
+                                ▶ REPRISE
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {currentQ ? (

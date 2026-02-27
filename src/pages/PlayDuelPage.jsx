@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 
 const API = 'http://127.0.0.1:5000';
 const TIMER_SECONDS = 30;
@@ -12,7 +11,7 @@ export default function PlayDuelPage() {
     const navigate = useNavigate();
     const { getToken, isLoaded } = useAuth();
 
-    const [phase, setPhase] = useState('loading');
+    const [phase, setPhase] = useState('loading');  // loading | playing | submitting | waiting | error
     const [quiz, setQuiz] = useState(null);
     const [qIndex, setQIndex] = useState(0);
     const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -21,15 +20,19 @@ export default function PlayDuelPage() {
     const quizRef = useRef(null);
     const qIndexRef = useRef(0);
     const answersRef = useRef([]);
-    const intervalRef = useRef(null);
+    const intervalRef = useRef(null);   // question timer
+    const pollRef = useRef(null);       // opponent polling
     const hasStarted = useRef(false);
-    const socketRef = useRef(null);
 
     const stopTimer = useCallback(() => {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
     }, []);
 
-    // Load duel + quiz, then connect to socket room
+    const stopPolling = useCallback(() => {
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    }, []);
+
+    // ── Load duel + quiz ──────────────────────────────────────────────────────
     useEffect(() => {
         if (!isLoaded || hasStarted.current) return;
         hasStarted.current = true;
@@ -46,39 +49,16 @@ export default function PlayDuelPage() {
                 const loadedQuiz = quizRes.data.quiz;
                 quizRef.current = loadedQuiz;
                 setQuiz(loadedQuiz);
-
-                // Connect WebSocket and join the duel room
-                const socket = io(API, { transports: ['websocket'] });
-                socketRef.current = socket;
-
-                socket.on('connect', () => {
-                    socket.emit('duel:join_room', { duel_id: duelId });
-                });
-
-                // Opponent finished: show indicator
-                socket.on('duel:progress', (data) => {
-                    if (data.player_id !== socket.id) {
-                        setOpponentDone(true);
-                    }
-                });
-
-                // Both done: navigate to results
-                socket.on('duel:finished', () => {
-                    socket.disconnect();
-                    navigate(`/duel/result/${duelId}`);
-                });
-
                 setPhase('playing');
             } catch (e) {
                 console.error(e);
                 setPhase('error');
             }
         })();
-
-        return () => { socketRef.current?.disconnect(); };
+        return () => { stopTimer(); stopPolling(); };
     }, [isLoaded]); // eslint-disable-line
 
-    // Timer effect (re-runs when qIndex changes)
+    // ── Timer (restarts on each question) ─────────────────────────────────────
     useEffect(() => {
         if (phase !== 'playing') return;
         stopTimer();
@@ -92,38 +72,60 @@ export default function PlayDuelPage() {
         return stopTimer;
     }, [phase, qIndex]); // eslint-disable-line
 
+    // ── Start polling for opponent after player submits ────────────────────────
+    const startOpponentPolling = useCallback(() => {
+        pollRef.current = setInterval(async () => {
+            try {
+                const token = await getToken();
+                const res = await axios.get(`${API}/duel/${duelId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const duel = res.data.duel;
+                if (duel?.status === 'finished') {
+                    stopPolling();
+                    navigate(`/duel/result/${duelId}`);
+                } else if (duel?.player1_done && duel?.player2_done) {
+                    stopPolling();
+                    navigate(`/duel/result/${duelId}`);
+                }
+                // Show opponent progress indicator
+                setOpponentDone(duel?.player1_done && duel?.player2_done ? false : (duel?.player1_done || duel?.player2_done));
+            } catch (e) { console.error('[poll]', e); }
+        }, 2000);
+    }, [duelId, getToken, navigate, stopPolling]);
+
+    // ── Record answer ─────────────────────────────────────────────────────────
     const handleRecord = useCallback(async (selected) => {
         stopTimer();
         const q = quizRef.current?.questions[qIndexRef.current];
         if (!q) return;
-        const entry = { question_id: q.id ?? String(qIndexRef.current), selected_option: selected, is_correct: false };
+
+        const entry = {
+            question_id: q.id ?? String(qIndexRef.current),
+            selected_option: selected,
+            is_correct: false,
+        };
         const updated = [...answersRef.current, entry];
         answersRef.current = updated;
-        const nextIndex = qIndexRef.current + 1;
-        const questions = quizRef.current?.questions ?? [];
 
-        if (nextIndex >= questions.length) {
-            // Submit answers via HTTP
+        const nextIndex = qIndexRef.current + 1;
+        const total = quizRef.current?.questions?.length ?? 0;
+
+        if (nextIndex >= total) {
+            // All questions answered — submit
             setPhase('submitting');
             try {
                 const token = await getToken();
                 const res = await axios.post(`${API}/duel/${duelId}/submit`, { answers: updated }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
-                // Notify socket room this player is done
-                socketRef.current?.emit('duel:answer_submitted', {
-                    duel_id: duelId,
-                    player_id: socketRef.current.id,
-                    score: res.data.score,
-                    both_done: res.data.both_done,
-                });
-
                 if (res.data.both_done) {
-                    socketRef.current?.disconnect();
+                    // Opponent already done too — go straight to results
                     navigate(`/duel/result/${duelId}`);
                 } else {
+                    // Wait for opponent via polling
                     setPhase('waiting');
+                    startOpponentPolling();
                 }
             } catch (e) {
                 console.error(e);
@@ -133,12 +135,14 @@ export default function PlayDuelPage() {
             qIndexRef.current = nextIndex;
             setQIndex(nextIndex);
         }
-    }, [duelId, getToken, stopTimer, navigate]);
+    }, [duelId, getToken, stopTimer, navigate, startOpponentPolling]);
 
+    // ─── UI helpers ───────────────────────────────────────────────────────────
     const timerColor = timer <= 5 ? 'var(--magenta)' : timer <= 10 ? 'var(--yellow)' : 'var(--green)';
     const timerPct = (timer / TIMER_SECONDS) * 100;
     const currentQ = quiz?.questions[qIndex];
 
+    // ─── Phases ───────────────────────────────────────────────────────────────
     if (phase === 'loading' || phase === 'error') return (
         <div className="retro-page">
             <div className="retro-spinner" />
@@ -161,18 +165,20 @@ export default function PlayDuelPage() {
             <p style={{ fontFamily: 'var(--font-pixel)', color: 'var(--green)', fontSize: 14, marginBottom: 24, textShadow: '0 0 12px var(--green)' }}>
                 QUIZ TERMINÉ !
             </p>
-            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 11, letterSpacing: '0.15em', animation: 'blink 1.2s infinite' }}>
-                EN ATTENTE VIA WEBSOCKET...
+            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 11, letterSpacing: '0.15em', animation: 'blink 1.2s infinite', marginBottom: 8 }}>
+                EN ATTENTE DE L'ADVERSAIRE...
             </p>
-            <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--dim)', fontSize: 11, marginTop: 8 }}>
-                Vous serez redirigé automatiquement quand l'adversaire termine.
+            <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--dim)', fontSize: 11 }}>
+                Vérification toutes les 2 secondes
             </p>
         </div>
     );
 
+    // ─── Playing ──────────────────────────────────────────────────────────────
     return (
         <div style={{ minHeight: '100vh', padding: '80px 20px 40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div className="retro-card" style={{ width: '100%', maxWidth: 780, borderColor: 'var(--magenta)', boxShadow: '0 0 20px rgba(255,0,255,0.2)' }}>
+
                 {/* HUD bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
                     <span style={{ fontFamily: 'var(--font-pixel)', fontSize: 10, color: 'var(--magenta)', textShadow: '0 0 8px var(--magenta)' }}>
@@ -198,6 +204,7 @@ export default function PlayDuelPage() {
                     </div>
                 </div>
 
+                {/* Question */}
                 {currentQ && (
                     <>
                         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 17, lineHeight: 1.8, color: 'var(--white)', marginBottom: 32, borderLeft: '3px solid var(--cyan)', paddingLeft: 16 }}>

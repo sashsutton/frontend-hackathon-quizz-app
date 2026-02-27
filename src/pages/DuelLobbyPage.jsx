@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 
 const API = 'http://127.0.0.1:5000';
 
@@ -17,7 +16,7 @@ export default function DuelLobbyPage() {
     const [error, setError] = useState('');
     const [createdCode, setCreatedCode] = useState('');
     const [createdId, setCreatedId] = useState('');
-    const socketRef = useRef(null);
+    const pollingRef = useRef(null);
 
     // Load quiz list
     useEffect(() => {
@@ -33,31 +32,26 @@ export default function DuelLobbyPage() {
         })();
     }, [isLoaded]);
 
-    // Connect WebSocket and listen for duel:started event
-    const connectSocket = (duelId) => {
-        const socket = io(API, { transports: ['websocket'] });
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
-            console.log('[socket] connected', socket.id);
-            socket.emit('duel:join_room', { duel_id: duelId });
-        });
-
-        socket.on('duel:started', (data) => {
-            console.log('[socket] duel started', data);
-            socket.disconnect();
-            navigate(`/duel/play/${duelId}`);
-        });
-
-        socket.on('connect_error', (err) => {
-            console.warn('[socket] connect error, falling back to poll', err);
-        });
-    };
-
-    // Cleanup socket on unmount
+    // Cleanup polling on unmount
     useEffect(() => {
-        return () => { socketRef.current?.disconnect(); };
+        return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
     }, []);
+
+    // Start polling for duel status (Player 1 waiting for Player 2)
+    const startPolling = (duelId) => {
+        pollingRef.current = setInterval(async () => {
+            try {
+                const token = await getToken();
+                const res = await axios.get(`${API}/duel/${duelId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.data.duel?.status === 'in_battle') {
+                    clearInterval(pollingRef.current);
+                    navigate(`/duel/play/${duelId}`);
+                }
+            } catch (e) { console.error('[poll]', e); }
+        }, 2000);
+    };
 
     const handleCreate = async () => {
         if (!selectedQuiz) { setError('CHOISISSEZ UN QUIZ.'); return; }
@@ -69,7 +63,7 @@ export default function DuelLobbyPage() {
             });
             setCreatedCode(res.data.room_code);
             setCreatedId(res.data.duel_id);
-            connectSocket(res.data.duel_id);
+            startPolling(res.data.duel_id);
         } catch (e) {
             setError(e.response?.data?.error ?? 'ERREUR DE CONNEXION.');
         } finally { setLoading(false); }
@@ -83,24 +77,18 @@ export default function DuelLobbyPage() {
             const res = await axios.post(`${API}/duel/join/${joinCode.toUpperCase()}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const duelId = res.data.duel_id;
-
-            // Connect to socket room, then navigate straight to game
-            const socket = io(API, { transports: ['websocket'] });
-            socketRef.current = socket;
-            socket.on('connect', () => {
-                socket.emit('duel:join_room', { duel_id: duelId });
-                // Notify the room that player 2 joined
-                socket.emit('duel:player_joined', {
-                    duel_id: duelId,
-                    player2_name: 'Joueur 2'
-                });
-                socket.disconnect();
-            });
-            navigate(`/duel/play/${duelId}`);
+            navigate(`/duel/play/${res.data.duel_id}`);
         } catch (e) {
             setError(e.response?.data?.error ?? 'CODE INVALIDE.');
         } finally { setLoading(false); }
+    };
+
+    const handleTabSwitch = (newTab) => {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        setTab(newTab);
+        setError('');
+        setCreatedCode('');
+        setCreatedId('');
     };
 
     return (
@@ -115,11 +103,12 @@ export default function DuelLobbyPage() {
                     <div style={{ width: 60, height: 2, background: 'var(--magenta)', margin: '20px auto 0', boxShadow: '0 0 10px var(--magenta)' }} />
                 </div>
 
-                <div style={{ display: 'flex', gap: 0, marginBottom: 24, border: '1px solid rgba(0,255,255,0.2)' }}>
+                {/* Tab switcher */}
+                <div style={{ display: 'flex', marginBottom: 24, border: '1px solid rgba(0,255,255,0.2)' }}>
                     {[['create', '◈ CRÉER'], ['join', '◉ REJOINDRE']].map(([key, label]) => (
                         <button
                             key={key}
-                            onClick={() => { setTab(key); setError(''); setCreatedCode(''); if (socketRef.current) socketRef.current.disconnect(); }}
+                            onClick={() => handleTabSwitch(key)}
                             style={{
                                 flex: 1, padding: '12px', cursor: 'pointer',
                                 fontFamily: 'var(--font-hud)', fontSize: 11, letterSpacing: '0.1em',
@@ -135,6 +124,8 @@ export default function DuelLobbyPage() {
                 </div>
 
                 <div className="retro-card" style={{ borderColor: tab === 'create' ? 'rgba(255,0,255,0.4)' : 'rgba(0,255,255,0.4)' }}>
+
+                    {/* ── CREATE TAB ── */}
                     {tab === 'create' && !createdCode && (
                         <>
                             <label className="retro-label">Sélectionner un quiz</label>
@@ -149,6 +140,7 @@ export default function DuelLobbyPage() {
                         </>
                     )}
 
+                    {/* ── WAITING SCREEN ── */}
                     {tab === 'create' && createdCode && (
                         <div style={{ textAlign: 'center' }}>
                             <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--dim)', fontSize: 11, letterSpacing: '0.1em', marginBottom: 20 }}>
@@ -163,15 +155,16 @@ export default function DuelLobbyPage() {
                             }}>
                                 {createdCode}
                             </div>
-                            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 11, letterSpacing: '0.1em', animation: 'blink 1.2s infinite' }}>
+                            <p style={{ fontFamily: 'var(--font-hud)', color: 'var(--magenta)', fontSize: 11, letterSpacing: '0.1em', animation: 'blink 1.2s infinite', marginBottom: 8 }}>
                                 ▶ EN ATTENTE D'UN ADVERSAIRE...
                             </p>
-                            <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--dim)', fontSize: 11, marginTop: 8 }}>
-                                Connexion WebSocket active — démarrage automatique
+                            <p style={{ fontFamily: 'var(--font-mono)', color: 'var(--dim)', fontSize: 10 }}>
+                                Vérification toutes les 2 secondes
                             </p>
                         </div>
                     )}
 
+                    {/* ── JOIN TAB ── */}
                     {tab === 'join' && (
                         <>
                             <label className="retro-label">Code de room</label>
