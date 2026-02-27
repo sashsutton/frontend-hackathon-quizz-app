@@ -46,12 +46,33 @@ export default function DuelResultPage() {
     const opponentScore = isPlayer1 ? duel.player2_score : duel.player1_score;
     const myName = isPlayer1 ? duel.player1_name : duel.player2_name;
     const opponentName = isPlayer1 ? duel.player2_name : duel.player1_name;
-    const won = duel.winner_id === myClerkId;
-    const draw = !duel.winner_id && duel.status === 'finished';
 
-    const result = won ? { text: 'VICTORY', color: 'var(--green)', elo: '+20' }
-        : draw ? { text: 'DRAW', color: 'var(--yellow)', elo: '±0' }
+    // Debug — visible in browser console to diagnose issues
+    console.log('[Duel Result]', { myClerkId, winner_id: duel.winner_id, myScore, opponentScore, status: duel.status });
+
+    // Primary: compare via winner_id set by backend
+    // Fallback: if winner_id missing (race condition/bug), use raw scores
+    let outcome;
+    if (duel.winner_id === myClerkId) {
+        outcome = 'win';
+    } else if (duel.winner_id && duel.winner_id !== myClerkId) {
+        outcome = 'loss';
+    } else if (myScore > opponentScore) {
+        outcome = 'win';
+    } else if (opponentScore > myScore) {
+        outcome = 'loss';
+    } else {
+        outcome = 'draw';
+    }
+
+    const result = outcome === 'win'
+        ? { text: 'VICTORY', color: 'var(--green)', elo: '+20' }
+        : outcome === 'draw'
+            ? { text: 'DRAW', color: 'var(--yellow)', elo: '±0' }
             : { text: 'DEFEAT', color: 'var(--magenta)', elo: '-20' };
+
+    const won = outcome === 'win';
+    const draw = outcome === 'draw';
 
     return (
         <div className="retro-page" style={{ paddingTop: 80 }}>

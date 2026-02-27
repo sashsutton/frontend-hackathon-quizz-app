@@ -79,8 +79,8 @@ function PlaySoloGamePage() {
         await goNext(updated);
     }, [goNext, stopTimer]);
 
-    // ─── Timer effect ────────────────────────────────────────────────────────────
-    // Starts/restarts when phase===playing and qIndex changes
+
+
     useEffect(() => {
         if (phase !== "playing") return;
 
@@ -93,12 +93,12 @@ function PlaySoloGamePage() {
             setTimer(remaining);
             if (remaining <= 0) {
                 stopTimer();
-                recordAnswer(""); // timeout → empty answer
+                recordAnswer("");
             }
         }, 1000);
 
         return stopTimer;
-    }, [phase, qIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [phase, qIndex]);
 
     // ─── Load quiz ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -109,33 +109,33 @@ function PlaySoloGamePage() {
             try {
                 const token = await getToken();
 
-                // 1. Check / create solo session
+
                 const sessRes = await axios.post(
                     `${API}/quiz/soloquiz/${quizId}`,
                     {},
                     { headers: { Authorization: `Bearer ${token}` } }
-                ).catch(err => err.response); // catch 409 without throwing
+                ).catch(err => err.response);
 
                 if (!sessRes || !sessRes.data) throw new Error("Erreur de connexion au serveur.");
 
                 const { status, session_id } = sessRes.data;
 
                 if (status === 'finished') {
-                    // User already completed — block
+
                     setPhase('blocked');
                     return;
                 }
 
                 if (status === 'in_progress') {
-                    // Resume existing session
+
                     sessionId.current = session_id;
                     setIsResume(true);
                 } else {
-                    // 'new' — fresh session
+
                     sessionId.current = sessRes.data.session_id;
                 }
 
-                // 2. Load quiz questions (correct_answer stripped on backend)
+
                 const quizRes = await axios.get(
                     `${API}/quiz/${quizId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
@@ -154,10 +154,10 @@ function PlaySoloGamePage() {
                 setPhase('error');
             }
         })();
-    }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [isLoaded]);
 
 
-    // ─── Render ──────────────────────────────────────────────────────────────────
+
 
     const pageStyle = {
         minHeight: '100vh',
@@ -274,7 +274,7 @@ function PlaySoloGamePage() {
         );
     }
 
-    // ── phase === "playing" ──
+
     const currentQ = quiz?.questions[qIndex];
     const timerColor = timer <= 5 ? 'var(--magenta)' : timer <= 10 ? 'var(--yellow)' : 'var(--cyan)';
     const timerPct = (timer / TIMER_SECONDS) * 100;
