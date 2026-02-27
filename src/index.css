@@ -39,13 +39,13 @@ body {
   font-family: var(--font-mono);
   min-height: 100vh;
   overflow-x: hidden;
-  /* CRT scanlines overlay */
+  /* CRT scanlines — subtle, keeps readable text */
   background-image:
     repeating-linear-gradient(0deg,
       transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px);
+      transparent 3px,
+      rgba(0, 0, 0, 0.04) 3px,
+      rgba(0, 0, 0, 0.04) 4px);
 }
 
 /* Retro grid background */
@@ -83,6 +83,16 @@ body::after {
   min-height: 100vh;
   max-width: 100%;
   padding: 0;
+}
+
+/* Pixel font — disable anti-aliasing for crisp rendering */
+.retro-title,
+[style*="Press Start"],
+[style*="--font-pixel"] {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: none;
+  font-smooth: never;
+  image-rendering: pixelated;
 }
 
 /* ─── TYPOGRAPHY ──────────────────────────────────────────────── */
@@ -326,17 +336,19 @@ h3 {
   font-family: var(--font-pixel);
   font-size: clamp(16px, 3vw, 28px);
   color: var(--cyan);
-  text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0, 255, 255, 0.4);
+  /* Toned-down glow — single layer, small spread, no second halo */
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
   text-align: center;
   letter-spacing: 0.05em;
   animation: flicker 8s infinite;
+  -webkit-font-smoothing: none;
 }
 
 .retro-subtitle {
   font-family: var(--font-hud);
   font-size: 13px;
   color: var(--magenta);
-  text-shadow: 0 0 8px var(--magenta);
+  text-shadow: 0 0 4px rgba(255, 0, 255, 0.5);
   text-align: center;
   letter-spacing: 0.15em;
   margin-top: 10px;

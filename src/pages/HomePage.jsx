@@ -52,9 +52,10 @@ function HomePage() {
                     fontFamily: 'var(--font-pixel)',
                     fontSize: 'clamp(22px, 5vw, 52px)',
                     color: 'var(--cyan)',
-                    textShadow: '0 0 20px var(--cyan), 0 0 60px rgba(0,255,255,0.4)',
+                    textShadow: '0 0 4px rgba(0,255,255,0.8)',
                     lineHeight: 1.4,
                     marginBottom: 24,
+                    WebkitFontSmoothing: 'none',
                 }}>
                     QUIZ APP
                 </h1>
@@ -63,7 +64,7 @@ function HomePage() {
                     fontFamily: 'var(--font-hud)',
                     fontSize: 14,
                     color: 'var(--magenta)',
-                    textShadow: '0 0 10px var(--magenta)',
+                    textShadow: '0 0 4px rgba(255,0,255,0.6)',
                     letterSpacing: '0.2em',
                     marginBottom: 40,
                 }}>
@@ -116,8 +117,9 @@ function HomePage() {
                                 fontFamily: 'var(--font-pixel)',
                                 fontSize: 13,
                                 color: card.color,
-                                textShadow: `0 0 10px ${card.color}`,
+                                textShadow: `0 0 4px ${card.color}99`,
                                 marginBottom: 14,
+                                WebkitFontSmoothing: 'none',
                             }}>
                                 {card.title}
                             </h3>
