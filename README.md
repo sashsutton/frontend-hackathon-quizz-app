@@ -1,16 +1,57 @@
-# React + Vite
+# Frontend for AMU Hackathon 2026 Quiz App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This frontend provides a user interface for the quiz application designed to strengthen cohesion among computer science students at Aix-Marseille University. It interacts with the backend to facilitate quiz-based interactions between undergraduate and graduate students.
 
-Currently, two official plugins are available:
+## Features
+- User authentication
+- Quiz creation and participation
+- Duel mode for competitive quizzing
+- Real-time interactions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Setup
 
-## React Compiler
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd frontend-hackathon-quizz-app
+   ```
 
-## Expanding the ESLint configuration
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. Set environment variables:
+   ```bash
+   export VITE_BACKEND_URL=http://localhost:5000
+   ```
+
+4. Run the application:
+   ```bash
+   npm run dev
+   ```
+
+## Project Structure
+```
+frontend-hackathon-quizz-app/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   ├── App.vue
+│   └── main.js
+├── index.html
+├── package.json
+└── vite.config.js
+```
+
+## License
+MIT
